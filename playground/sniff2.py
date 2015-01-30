@@ -74,7 +74,7 @@ if __name__=='__main__':
     dev = sys.argv[1]
     net, mask = pcap.lookupnet(dev)
     # note:    to_ms does nothing on linux
-    p.open_live(dev, 1600, 0, 100)
+    p.open_live(dev, 1600, 1, 100)
     #p.dump_open('dumpfile')
     p.setfilter(string.join(sys.argv[2:],' '), 0, 0)
 
