@@ -1,15 +1,46 @@
 # Overseer
 Program to watch over the activities of a CTF game.
 
-To get this project started, you will need pylibpcap, and the construct packages. We suggest installing using pip, and controlling the installs using virtualenv.
+To get this project started, you will need libpcap.
 
-PyLibPCAP
+LibPCAP
 ---------
-PyLibPCAP is used for sniffing the network activity, and may be obtained from the following site:
-	http://ncu.dl.sourceforge.net/project/pylibpcap/pylibpcap/0.6.4/pylibpcap-0.6.4.tar.gz
+LibPCAP is used for sniffing the network activity, and may be obtained by issuing the following:
 
-Construct
+```
+sudo apt-get install libpcap-dev
+```
+
+Upgrading NPM
 ---------
-Construct is used for dealing with structures and packing/parsing data into and out of these structures. Use pip to install (pip install construct)
+```
+npm install -g npm
+```
 
-Note for Adam: To run test code, "python -m test.snifferTest"
+Install Bower and Grunt
+---------
+```
+npm install -g bower grunt-cli
+```
+
+Setup the project
+---------
+```
+git clone https://github.com/audrummer15/Overseer.git
+cd Overseer
+npm install
+bower install
+```
+
+Start the Application
+---------
+```
+sudo grunt serve
+```
+
+If this doesn't work, ensure that the grunt tool is in your path, and try the following:
+
+```
+sudo -s
+grunt serve
+```
