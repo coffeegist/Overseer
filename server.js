@@ -44,7 +44,7 @@ app.get("/", function(req, res){
 
 io.sockets.on('connection', function (socket) {
 
-  io.sockets.emit('blast', {msg:"<span style=\"color:red !important\">someone connected</span>"});
+  io.sockets.emit('blast', {msg:"<span style=\"color:red !important\">Connected to Server</span>"});
 
   socket.on('blast', function(data){
     console.log(data);
