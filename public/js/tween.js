@@ -28,7 +28,7 @@ function shootLaser(x, y) {
 
   beam.setBounds(0,0,70,3);
   createjs.Tween.get(beam,{ loop: false, onChange: beamUpdate })
-    .to({ x: 400, alpha: 0 }, 1000, createjs.Ease.quadOut(2));
+    .to({ x: 940, alpha: 0 }, 1500, createjs.Ease.quadOut(2));
 }
 
 function beamUpdate(e) {

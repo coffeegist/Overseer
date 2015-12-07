@@ -15,12 +15,8 @@ $(function(){
 
   //SOCKET STUFF
   socket.on("traffic", function(data){
-    //var copy = $allPostsTextArea.html();
-    //$allPostsTextArea.html('<p>' + copy + data.msg + "</p>");
-    //$allPostsTextArea.scrollTop($allPostsTextArea[0].scrollHeight - $allPostsTextArea.height());
     $allTraffic.prepend(data.msg + '<br/>');
-    console.log("Appended: " + data);
-    //.css('scrollTop', $allPostsTextArea.css('scrollHeight'));
+    shootLaser(50, getRandom(0,500));
   });
 
   $startButton.click(function(e){
@@ -32,3 +28,7 @@ $(function(){
   });
 
 });
+
+function getRandom(min, max) {
+  return Math.random() * (max - min) + min;
+}
