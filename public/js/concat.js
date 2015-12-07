@@ -14,7 +14,7 @@ $(function(){
 
 
   //SOCKET STUFF
-  socket.on("blast", function(data){
+  socket.on("traffic", function(data){
     //var copy = $allPostsTextArea.html();
     //$allPostsTextArea.html('<p>' + copy + data.msg + "</p>");
     //$allPostsTextArea.scrollTop($allPostsTextArea[0].scrollHeight - $allPostsTextArea.height());
