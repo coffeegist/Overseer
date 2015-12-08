@@ -56,33 +56,55 @@
         margin:0;
         padding:0;
       }
+
+      /* Sticky footer style */
+      html {
+        position: relative;
+        min-height: 100%;
+      }
+      body {
+        /* Margin bottom by footer height */
+        margin-bottom: 233px;
+        overflow: hidden;
+      }
+      .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        /* Set the fixed height of the footer here */
+        height: 233px;
+      }
     </style>
   </head>
-  <body onload="init();">
 
+  <body onload="init();">
     <!--[if lt IE 8]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <div class="container">
-      <div class="jumbotron">
-        <h1>Overseer</h1>
-        <canvas id="demoCanvas" height="500" width="940"></canvas>
-        <div class="row">
-          <div class="col-md-4 col-sm-6 col-xs-6">
-            <h3>Network Traffic</h3>
-            <div id="allPostsAdam" class="form-control"></div>
-            <div class="input-group">
-              <input id="traffic" type="text" class="form-control" placeholder="send something to everyone">
-              <span class="input-group-btn">
-                <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
-                <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
-              </span>
-            </div><!-- /input-group -->
-          </div>
-        </div>
+    <div class="navbar navbar-inverse navbar-static-top">
+      <div class="navbar-inner">
+        <a class="brand" href="#" style="color: white;">Overseer</a>
       </div>
     </div>
+
+    <div class="container">
+      <canvas id="demoCanvas" height="500" width="940"></canvas>
+    </div>
+
+    <footer class="footer">
+      <div class="well" style="margin-bottom: 0px;">
+      <h3>Network Traffic</h3>
+      <div id="allPostsAdam" class="form-control"></div>
+      <div class="input-group">
+        <input id="traffic" type="text" class="form-control" placeholder="send something to everyone">
+        <span class="input-group-btn">
+          <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
+          <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
+        </span>
+      </div><!-- /input-group -->
+    </div>
+    </footer>
 
     <!-- jQuery -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
