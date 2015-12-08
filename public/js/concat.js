@@ -8,7 +8,7 @@ var app = app || {};
 $(function(){
   //setup some common vars
   var $allPostsTextArea = $('#allPosts'),
-    $allTraffic = $('#allPostsAdam'),
+    $allTraffic = $('#trafficFeed'),
     $startButton = $('#startCapture');
     $stopButton = $('#stopCapture');
 

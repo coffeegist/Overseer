@@ -27,7 +27,7 @@
         overflow: scroll;
       }
 
-      #allPostsAdam {
+      #trafficFeed {
         resize: none;
         font-size: 12px;
         border-radius: 5px;
@@ -62,11 +62,12 @@
         position: relative;
         min-height: 100%;
       }
+
       body {
         /* Margin bottom by footer height */
         margin-bottom: 233px;
-        overflow: hidden;
       }
+
       .footer {
         position: absolute;
         bottom: 0;
@@ -94,16 +95,16 @@
 
     <footer class="footer">
       <div class="well" style="margin-bottom: 0px;">
-      <h3>Network Traffic</h3>
-      <div id="allPostsAdam" class="form-control"></div>
-      <div class="input-group">
-        <input id="traffic" type="text" class="form-control" placeholder="send something to everyone">
-        <span class="input-group-btn">
-          <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
-          <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
-        </span>
-      </div><!-- /input-group -->
-    </div>
+        <h3>Network Traffic</h3>
+        <div id="trafficFeed" class="form-control"></div>
+        <div class="input-group">
+          <span class="input-group-btn">
+            <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
+            <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
+            <div class="clearfix"></div>
+          </span>
+        </div><!-- /input-group -->
+      </div>
     </footer>
 
     <!-- jQuery -->
