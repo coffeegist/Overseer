@@ -1,24 +1,18 @@
+var TW_TOPOLOGY_RADIUS = 200;
+var TW_TOPOLOGY_CENTER_X = 440;
+var TW_TOPOLOGY_CENTER_Y = 20;
+var TW_REDRAW_FREQUENCY = 1000;
+
 var stage = new createjs.Stage("demoCanvas");
+var tw_nodes = new Array();
+var tw_redraw_interval = 0;
 
 function init() {
-  var circle = new createjs.Shape();
-  circle.graphics.beginFill("DeepSkyBlue").drawCircle(50, 250, 25);
-  stage.addChild(circle);
-
-  var circle2 = new createjs.Shape();
-  circle2.graphics.beginFill("DeepSkyBlue").drawCircle(890, 250, 25);
-  stage.addChild(circle2);
-
-  /*createjs.Tween.get(circle, { loop: true })
-    .to({ x: 400 }, 1000, createjs.Ease.getPowInOut(4))
-    .to({ alpha: 0, y: 175 }, 500, createjs.Ease.getPowInOut(2))
-    .to({ alpha: 0, y: 225 }, 100)
-    .to({ alpha: 1, y: 200 }, 500, createjs.Ease.getPowInOut(2))
-    .to({ x: 100 }, 800, createjs.Ease.getPowInOut(2));
-  */
   createjs.Ticker.setFPS(60);
   createjs.Ticker.addEventListener("tick", stage);
-  shootLaser(50, 100, 800, 250);
+
+  if( tw_redraw_interval > 0 ) clearInterval(tw_redraw_interval);
+  tw_redraw_interval = setInterval(twRedrawNodes, TW_REDRAW_FREQUENCY);
 }
 
 function shootLaser(originX, originY, destX, destY) {
@@ -33,7 +27,7 @@ function shootLaser(originX, originY, destX, destY) {
 
   stage.addChildAt(beam, 0);
 
-  createjs.Tween.get(beam,{ loop: false, onChange: beamUpdate })
+  createjs.Tween.get(beam, {loop: false, onChange: beamUpdate})
     .to({x: destX, y: destY, alpha: 0.25}, 1500, createjs.Ease.linear)
     .call(beamComplete);
 }
@@ -69,8 +63,28 @@ function slopeToDegrees(slope) {
   return Math.atan(slope) * (180/Math.PI);
 }
 
-function createNode(ip) {
-  var circle = new createjs.Shape();
-  circle.graphics.beginFill("DeepSkyBlue").drawCircle(50, 250, 25);
-  stage.addChild(circle);
+function twAddNode(ip) {
+  if (!(ip in tw_nodes)) {
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(50, 250, 25);
+    stage.addChild(circle);
+    tw_nodes[ip] = circle;
+    twRedrawNodes();
+  }
+}
+
+function twRedrawNodes() {
+  var totalNodes = Object.keys(tw_nodes).length;
+  var current = 0;
+  var step = (Math.PI * 2) / totalNodes;
+
+  for ( var node in tw_nodes ) {
+    nodeGraphic = tw_nodes[node];
+    var newX = TW_TOPOLOGY_CENTER_X + TW_TOPOLOGY_RADIUS * Math.sin(current);
+    var newY = TW_TOPOLOGY_CENTER_Y + TW_TOPOLOGY_RADIUS * Math.cos(current);
+    createjs.Tween.get(nodeGraphic, {loop: false})
+      .to({x: newX, y: newY}, 500, createjs.Ease.linear);
+
+    current += step;
+  }
 }

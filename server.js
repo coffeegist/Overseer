@@ -46,20 +46,24 @@ io.sockets.on('connection', function (socket) {
 
   io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Connected to Server</span>"});
 
-  socket.on('traffic', function(data){
+  socket.on('traffic', function(data) {
     console.log(data);
   });
 
-  socket.on('startCapture', function(){
+  socket.on('startCapture', function() {
     console.log('Starting capture');
     networkCaptor.start(io);
     io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Starting Capture!</span>"});
   });
 
-  socket.on('stopCapture', function(){
+  socket.on('stopCapture', function() {
     console.log('Stopping capture');
     networkCaptor.stop();
     io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Stopping Capture!</span>"});
+  });
+
+  socket.on('newNode', function(data) {
+    console.log('New Node: ', data);
   });
 });
 

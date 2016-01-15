@@ -14,12 +14,16 @@ $(function(){
 
 
   //SOCKET STUFF
-  socket.on("traffic", function(data){
+  socket.on("traffic", function(data) {
     $allTraffic.prepend(data.msg + '<br/>');
     shootLaser(50, getRandom(0,500), 850, 250);
   });
 
-  $startButton.click(function(e){
+  socket.on("newNode", function(data) {
+    twAddNode(data.ip);
+  });
+
+  $startButton.click(function(e) {
     socket.emit("startCapture");
   });
 
