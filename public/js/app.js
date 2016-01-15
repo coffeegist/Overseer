@@ -22,7 +22,7 @@ $(function(){
   //SOCKET STUFF
   socket.on("traffic", function(data){
     $allTraffic.prepend(data.msg + '<br/>');
-    shootLaser(50, getRandom(0,500));
+    shootLaser(50, getRandom(0,500), 850, 250);
   });
 
   $startButton.click(function(e){
