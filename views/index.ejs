@@ -78,7 +78,7 @@
     </style>
   </head>
 
-  <body onload="init();">
+  <body>
     <!--[if lt IE 8]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -90,7 +90,7 @@
     </div>
 
     <div class="container">
-      <canvas id="demoCanvas" height="500" width="940"></canvas>
+      <canvas id="trafficCanvas" height="500" width="940"></canvas>
     </div>
 
     <footer class="footer">
@@ -120,11 +120,12 @@
 
     <script src="https://code.createjs.com/tweenjs-0.6.1.min.js"></script>
     <script>window.createjs.Tween || document.write('<script src="bower_components/TweenJS/lib/tweenjs-0.6.1.min.js"><\/script>')</script>
-    <script src="js/tween.js"></script>
 
     <!-- APP CODE -->
+    <script src="js/animator.js"></script>
     <script src="js/node.js"></script>
     <script src="js/node_manager.js"></script>
+    <script src="js/subject.js"></script>
     <script src="js/app.min.js"></script>
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->

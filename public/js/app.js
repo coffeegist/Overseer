@@ -5,10 +5,13 @@
 **************************************/
 
 // connect to our socket server
-var socket = io.connect(); //io.connect('http://127.0.0.1:1337/');
+var socket = io.connect();
 
 var app = app || {};
 
+var nodeManager = new NodeManager();
+var animator = new Animator();
+nodeManager.addObserver(animator);
 
 // shortcut for document.ready
 $(function(){
@@ -22,11 +25,12 @@ $(function(){
   //SOCKET STUFF
   socket.on("traffic", function(data) {
     $allTraffic.prepend(data.msg + '<br/>');
-    shootLaser(50, getRandom(0,500), 850, 250);
+    animator.shootLaser(50, getRandom(0,500), 850, 250);
   });
 
   socket.on("newNode", function(data) {
-    twAddNode(data.ip);
+    var newNode = new Node(data.ip);
+    nodeManager.addNode(newNode);
   });
 
   $startButton.click(function(e) {
