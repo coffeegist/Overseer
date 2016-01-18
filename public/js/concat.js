@@ -18,9 +18,8 @@ $(function(){
 
   //SOCKET STUFF
 
-  socket.emit("nodeListRequest", function(result) {
-    console.log(result);
-  });
+  // Request a list of nodes currently being tracked
+  socket.emit("nodeListRequest");
 
   socket.on("traffic", function(data) {
     $allTraffic.prepend(data.msg + '<br/>');
@@ -33,8 +32,7 @@ $(function(){
   });
 
   socket.on("deviceList", function(data) {
-    var list = data.list;
-    console.log(list);
+    var list = data.list; // list of IP addresses
 
     var newNode = undefined;
     for(var i = 0; i < list.length; i++) {
