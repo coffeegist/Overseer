@@ -17,6 +17,11 @@ $(function(){
 
 
   //SOCKET STUFF
+
+  socket.emit("nodeListRequest", function(result) {
+    console.log(result);
+  });
+
   socket.on("traffic", function(data) {
     $allTraffic.prepend(data.msg + '<br/>');
     animator.shootLaser(50, getRandom(0,500), 850, 250);
@@ -25,6 +30,17 @@ $(function(){
   socket.on("newNode", function(data) {
     var newNode = new Node(data.ip);
     nodeManager.addNode(newNode);
+  });
+
+  socket.on("deviceList", function(data) {
+    var list = data.list;
+    console.log(list);
+
+    var newNode = undefined;
+    for(var i = 0; i < list.length; i++) {
+      newNode = new Node(list[i]);
+      nodeManager.addNode(newNode);
+    }
   });
 
   $startButton.click(function(e) {

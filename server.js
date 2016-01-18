@@ -55,6 +55,10 @@ io.sockets.on('connection', function (socket) {
     networkCaptor.stop();
     io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Stopping Capture!</span>"});
   });
+
+  socket.on('nodeListRequest', function() {
+    networkCaptor.sendDeviceList(socket);
+  });
 });
 
 console.log("Port: ", runningPortNumber);
