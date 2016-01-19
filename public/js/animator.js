@@ -74,7 +74,6 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   if (sourceAddr in self._nodesClassC) {
     originX = self._nodesClassC[sourceAddr].x;
     originY = self._nodesClassC[sourceAddr].y;
-    console.log("From: ", originX, originY);
   } else {
     originX = self.TOPOLOGY_WIDTH / 2;
     originY = self.TOPOLOGY_HEIGHT / 2;
@@ -83,7 +82,6 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   if (destAddr in self._nodesClassC) {
     destX = self._nodesClassC[destAddr].x;
     destY = self._nodesClassC[destAddr].y;
-    console.log("To: ", destX, destY);
   } else {
     destX = self.TOPOLOGY_WIDTH / 2;
     destY = self.TOPOLOGY_HEIGHT / 2;;
