@@ -1,6 +1,6 @@
 function NodeManager() {
-    this._nodes = [];
-    this._subject = new Subject();
+  this._nodes = [];
+  this._subject = new Subject();
 }
 
 NodeManager.prototype.addObserver = function(observer) {
