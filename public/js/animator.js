@@ -16,8 +16,10 @@ function Animator() {
   var self = getAnimatorSelfInstance(this);
 
   self.TOPOLOGY_RADIUS = 200;
-  self.TOPOLOGY_CENTER_X = 440;
-  self.TOPOLOGY_CENTER_Y = 20;
+  self.TOPOLOGY_CENTER_X = 470;
+  self.TOPOLOGY_CENTER_Y = 250;
+  self.TOPOLOGY_WIDTH = 940;
+  self.TOPOLOGY_HEIGHT = 500;
   self.REDRAW_FREQUENCY = 1000;
 
   self._nodesClassC = new Array();
@@ -26,6 +28,8 @@ function Animator() {
 
   createjs.Ticker.setFPS(60);
   createjs.Ticker.addEventListener("tick", stage);
+
+  self._drawRouter();
 
   if( self._redrawInterval > 0 ) clearInterval(self._redrawInterval);
   self._redrawInterval = setInterval(self._redrawNodes, self.REDRAW_FREQUENCY);
@@ -36,9 +40,9 @@ Animator.prototype.addNode = function(ip) {
 
   if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
     var circle = new createjs.Shape();
-    circle.graphics.beginFill("DeepSkyBlue").drawCircle(50, 250, 25);
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
     stage.addChild(circle);
-    self._nodesClassC[ip] = circle;
+    self._nodesClassC[ip] = {graphic: circle, x: 0, y: 0};
     self._redrawNodes();
   } else {
     self._nodesExternal[ip] = ip;
@@ -57,16 +61,38 @@ Animator.prototype.update = function() {
     self.addNode(node.getIP());
   } else if (arg.traffic != undefined) {
     var traffic = arg.traffic;
-    self.shootLaser(0,0,900,400);
+    self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP());
   }
 };
 
-Animator.prototype.shootLaser = function(originX, originY, destX, destY) {
+Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   var self = getAnimatorSelfInstance(this);
-  var beam = new createjs.Shape();
+  var originX = 0, originY = 0;
+  var destX = 0, destY = 0;
 
+  /* Calculate origin and destination x,y coordinates */
+  if (sourceAddr in self._nodesClassC) {
+    originX = self._nodesClassC[sourceAddr].x;
+    originY = self._nodesClassC[sourceAddr].y;
+    console.log("From: ", originX, originY);
+  } else {
+    originX = self.TOPOLOGY_WIDTH / 2;
+    originY = self.TOPOLOGY_HEIGHT / 2;
+  }
+
+  if (destAddr in self._nodesClassC) {
+    destX = self._nodesClassC[destAddr].x;
+    destY = self._nodesClassC[destAddr].y;
+    console.log("To: ", destX, destY);
+  } else {
+    destX = self.TOPOLOGY_WIDTH / 2;
+    destY = self.TOPOLOGY_HEIGHT / 2;;
+  }
+
+  /* Draw laser */
+  var beam = new createjs.Shape();
   beam.graphics.beginFill("red");
-  beam.graphics.moveTo(0,1.5).lineTo(70,0).lineTo(70,3).closePath();
+  beam.graphics.moveTo(0, 1.5).lineTo(70, 0).lineTo(70, 3).closePath();
   beam.x = originX;
   beam.y = originY;
   beam.setBounds(0,0,70,3);
@@ -131,12 +157,22 @@ Animator.prototype._redrawNodes = function() {
   var step = (Math.PI * 2) / totalNodes;
 
   for ( var node in self._nodesClassC ) {
-    nodeGraphic = self._nodesClassC[node];
-    var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.sin(current);
-    var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.cos(current);
+    nodeGraphic = self._nodesClassC[node].graphic;
+    var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.cos(current);
+    var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.sin(current);
     createjs.Tween.get(nodeGraphic, {loop: false})
       .to({x: newX, y: newY}, 500, createjs.Ease.linear);
 
+    self._nodesClassC[node].x = newX;
+    self._nodesClassC[node].y = newY;
     current += step;
   }
+};
+
+Animator.prototype._drawRouter = function() {
+  var self = getAnimatorSelfInstance(this);
+  var router = new createjs.Shape();
+  router.graphics.beginFill("Black")
+    .drawCircle(self.TOPOLOGY_CENTER_X, self.TOPOLOGY_CENTER_Y, 12);
+  stage.addChild(router);
 };
