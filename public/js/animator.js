@@ -51,9 +51,13 @@ Animator.prototype.update = function() {
 
   // If arg.add is present, we are being notified of a new network node
   //   we should add to our canvas.
+  // If arg.traffic is present, we are being notified to visualize traffic.
   if (arg.add != undefined) {
     var node = arg.add;
     self.addNode(node.getIP());
+  } else if (arg.traffic != undefined) {
+    var traffic = arg.traffic;
+    self.shootLaser(0,0,900,400);
   }
 };
 

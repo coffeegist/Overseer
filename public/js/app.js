@@ -10,8 +10,10 @@ var socket = io.connect();
 var app = app || {};
 
 var nodeManager = new NodeManager();
+var trafficManager = new TrafficManager();
 var animator = new Animator();
 nodeManager.addObserver(animator);
+trafficManager.addObserver(animator);
 
 // shortcut for document.ready
 $(function(){
@@ -29,7 +31,9 @@ $(function(){
 
   socket.on("traffic", function(data) {
     $allTraffic.prepend(data.msg + '<br/>');
-    animator.shootLaser(50, getRandom(0,500), 850, 250);
+
+    var traffic = new Traffic(data.data);
+    trafficManager.processTraffic(traffic);
   });
 
   socket.on("newNode", function(data) {

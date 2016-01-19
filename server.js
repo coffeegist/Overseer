@@ -44,7 +44,10 @@ app.get("/", function(req, res){
 
 io.sockets.on('connection', function (socket) {
 
-  socket.emit('traffic', {msg:"<span style=\"color:red !important\">Connected to Server</span>"});
+  socket.emit('traffic', {
+    msg:"<span style=\"color:red !important\">Connected to Server</span>",
+    data: {type: 'sys'}
+  });
 
   socket.on('startCapture', function() {
     networkCaptor.start(io);
