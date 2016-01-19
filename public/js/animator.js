@@ -20,7 +20,8 @@ function Animator() {
   self.TOPOLOGY_CENTER_Y = 20;
   self.REDRAW_FREQUENCY = 1000;
 
-  self._nodes = new Array();
+  self._nodesClassC = new Array();
+  self._nodesExternal = new Array();
   self._redrawInterval = 0;
 
   createjs.Ticker.setFPS(60);
@@ -33,12 +34,14 @@ function Animator() {
 Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
 
-  if (!(ip in self._nodes)) {
+  if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
     var circle = new createjs.Shape();
     circle.graphics.beginFill("DeepSkyBlue").drawCircle(50, 250, 25);
     stage.addChild(circle);
-    self._nodes[ip] = circle;
+    self._nodesClassC[ip] = circle;
     self._redrawNodes();
+  } else {
+    self._nodesExternal[ip] = ip;
   }
 };
 
@@ -107,14 +110,24 @@ Animator.prototype._slopeToDegrees = function(slope) {
   return Math.atan(slope) * (180/Math.PI);
 };
 
+Animator.prototype._isClassC = function(ip) {
+  var firstOctet = Number(ip.substring(0,3));
+
+  if (firstOctet >= 192 && firstOctet <= 223) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 Animator.prototype._redrawNodes = function() {
   var self = getAnimatorSelfInstance(this);
-  var totalNodes = Object.keys(self._nodes).length;
+  var totalNodes = Object.keys(self._nodesClassC).length;
   var current = 0;
   var step = (Math.PI * 2) / totalNodes;
 
-  for ( var node in self._nodes ) {
-    nodeGraphic = self._nodes[node];
+  for ( var node in self._nodesClassC ) {
+    nodeGraphic = self._nodesClassC[node];
     var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.sin(current);
     var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.cos(current);
     createjs.Tween.get(nodeGraphic, {loop: false})
