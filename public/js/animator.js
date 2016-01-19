@@ -96,9 +96,7 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   beam.x = originX;
   beam.y = originY;
   beam.setBounds(0,0,70,3);
-  beam.rotation = self._slopeToDegrees(
-    self._findSlope(originX, destX, originY, destY)
-  );
+  beam.rotation = self._getTrafficRotation(originX, destX, originY, destY);
 
   stage.addChildAt(beam, 0);
 
@@ -176,3 +174,22 @@ Animator.prototype._drawRouter = function() {
     .drawCircle(self.TOPOLOGY_CENTER_X, self.TOPOLOGY_CENTER_Y, 12);
   stage.addChild(router);
 };
+
+Animator.prototype._getTrafficRotation = function(originX, destX, originY, destY) {
+  var self = getAnimatorSelfInstance(this);
+  var rotation = self._slopeToDegrees(
+    self._findSlope(originX, destX, originY, destY)
+  );
+
+  if (destX < originX) {
+    rotation += 180;
+  } else if (destX == originX) {
+    if (destY < originY) {
+      rotation -= 90;
+    } else {
+      rotation += 90;
+    }
+  }
+
+  return rotation;
+}
