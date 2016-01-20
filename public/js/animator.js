@@ -96,25 +96,23 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   beam.setBounds(0,0,70,3);
   beam.rotation = self._getTrafficRotation(originX, destX, originY, destY);
 
+  /* Draw mask */
+  var mask = new createjs.Shape();
+  mask.graphics.s("#f00")
+    .moveTo(originX,originY)
+    .lineTo(originX, originY+10).lineTo(destX, destY+10)
+    .lineTo(destX, destY-10).lineTo(originX, originY-10).closePath();
+  beam.mask = mask;
+
   stage.addChildAt(beam, 0);
 
   createjs.Tween.get(beam, {loop: false, onChange: self._beamUpdate})
-    .to({x: destX, y: destY, alpha: 0.25}, 1500, createjs.Ease.linear)
+    .to({x: destX, y: destY, alpha: 1}, 1500, createjs.Ease.linear)
     .call(self._beamComplete);
 };
 
 Animator.prototype._beamUpdate = function(e) {
-  var self = getAnimatorSelfInstance(this);
-  var beam = e.currentTarget.target;
-  var targetX = e.currentTarget._curQueueProps.x;
-
-  // Make the beam grow smaller when target reached
-  // * Needs updated
-  /*if( targetX - beam.x < beam.getBounds().width ) {
-    //beam.scaleX = (targetX - beam.x) / targetX;
-  } else {
-    //beam.scaleX = 1;
-  }*/
+  /* Stub for future use */
 };
 
 Animator.prototype._beamComplete = function(e) {
