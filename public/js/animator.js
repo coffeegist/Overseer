@@ -39,10 +39,9 @@ Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
 
   if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
-    var circle = new createjs.Shape();
-    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
-    stage.addChild(circle);
-    self._nodesClassC[ip] = {graphic: circle, x: 0, y: 0};
+    var newNode = self._createNodeGraphic(ip);
+    stage.addChild(newNode);
+    self._nodesClassC[ip] = {graphic: newNode, x: 0, y: 0};
     self._redrawNodes();
   } else {
     self._nodesExternal[ip] = ip;
@@ -119,6 +118,22 @@ Animator.prototype._beamComplete = function(e) {
   var self = getAnimatorSelfInstance(this);
   var beam = e.target;
   stage.removeChild(beam);
+};
+
+Animator.prototype._createNodeGraphic = function(ip) {
+  var circle = new createjs.Shape();
+  circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
+
+  var text = new createjs.Text(ip, "10px Times New Roman", "#000");
+  text.x = 0;
+  text.y = 30; // radius of circle plus 5px white space
+  text.textAlign = "center";
+
+  var container = new createjs.Container();
+  container.addChild(circle);
+  container.addChild(text);
+
+  return container;
 };
 
 Animator.prototype._findSlope = function(x1, x2, y1, y2) {
