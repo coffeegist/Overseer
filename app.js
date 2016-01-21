@@ -10,19 +10,19 @@ var app = express();
 var server = require('http').createServer(app)
 var io = require('socket.io').listen(server);
 var device  = require('express-device');
-var NetworkCaptor = require('./lib/capture');
+var NetworkCaptor = require('./server/lib/capture');
 var networkCaptor = new NetworkCaptor(io, {device: 'wlan0'});
 
 var runningPortNumber = process.env.PORT || 3000;
 
 
 app.configure(function(){
-  // I need to access everything in '/public' directly
-  app.use(express.static(__dirname + '/public'));
+  // I need to access everything in '/client/public' directly
+  app.use(express.static(__dirname + '/client/public'));
 
   //set the view engine
   app.set('view engine', 'ejs');
-  app.set('views', __dirname +'/views');
+  app.set('views', __dirname +'/client/views');
 
   app.use(device.capture());
 });

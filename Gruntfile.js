@@ -1,24 +1,24 @@
 // Generated on 2015-10-23 using generator-socketio 0.0.3
 'use strict';
 var moment = require('moment');
- 
+
 var LIVERELOAD_PORT = 35729;
-var RUNNING_PORT = 1337; // <- if you change this, you need to change in public/js/app.js and recompile
+var RUNNING_PORT = 1337; // <- if you change this, you need to change in client/public/js/app.js and recompile
 var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
 var mountFolder = function (connect, dir) {
   return connect.static(require('path').resolve(dir));
 };
- 
+
 module.exports = function (grunt) {
   // load all grunt tasks
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
- 
+
   grunt.initConfig({
 
     cssmin: {
       combine: {
         files: {
-          'public/css/core.css': 'public/bower_components/bootstrap.css/css/bootstrap.css'
+          'client/public/css/core.css': 'client/public/bower_components/bootstrap.css/css/bootstrap.css'
         }
       }
     },
@@ -32,18 +32,18 @@ module.exports = function (grunt) {
           cleancss: true
         },
         files: {
-          "public/css/core.css": "public/bower_components/bootstrap/less/bootstrap.less"
+          "client/public/css/core.css": "client/public/bower_components/bootstrap/less/bootstrap.less"
         }
       }
     },
-    
+
     sass: {
       dist: {
         options: {
           style: 'compressed'
         },
         files: {
-          'public/css/core.css': 'public/bower_components/sass-bootstrap/lib/bootstrap.scss',
+          'client/public/css/core.css': 'client/public/bower_components/sass-bootstrap/lib/bootstrap.scss',
         }
       }
     },
@@ -54,7 +54,7 @@ module.exports = function (grunt) {
           compress:true
         },
         files: {
-          'public/css/core.css': 'public/bower_components/bootstrap-stylus/stylus/bootstrap.styl'
+          'client/public/css/core.css': 'client/public/bower_components/bootstrap-stylus/stylus/bootstrap.styl'
         }
       }
     },
@@ -65,12 +65,12 @@ module.exports = function (grunt) {
         stripBanners:true
       },
       dist: {
-        src: ['public/js/app.js'],
-        dest: 'public/js/concat.js',
+        src: ['client/public/js/app.js'],
+        dest: 'client/public/js/concat.js',
       },
     },
 
-    //this is currently turned off, since jquery KILLS it 
+    //this is currently turned off, since jquery KILLS it
     jshint: {
       options: {
         curly: true,
@@ -82,8 +82,8 @@ module.exports = function (grunt) {
         }
       },
       files:{
-        src:['public/js/concat.js']
-      } 
+        src:['client/public/js/concat.js']
+      }
     },
 
     uglify: {
@@ -92,7 +92,7 @@ module.exports = function (grunt) {
       },
       my_target: {
         files: {
-          'public/js/app.min.js': ['public/js/concat.js']
+          'client/public/js/app.min.js': ['client/public/js/concat.js']
         }
       }
     },
@@ -105,21 +105,21 @@ module.exports = function (grunt) {
         },
         scripts: {
             files: [
-                'public/js/**/*.js'
+                'client/public/js/**/*.js'
             ],
             tasks:['build']
         },
         css: {
             files: [
-                'public/css/**/*.css',
+                'client/public/css/**/*.css',
             ],
         },
         less: {
-            files: ['public/bower_components/bootstrap/less/**/*.less'],
+            files: ['client/public/bower_components/bootstrap/less/**/*.less'],
             tasks: ['build']
         },
         express: {
-            files:  [ 'server.js', '!**/node_modules/**', '!Gruntfile.js' ],
+            files:  [ 'app.js', '!**/node_modules/**', '!Gruntfile.js' ],
             tasks:  [ 'watch' ],
             options: {
                 nospawn: true // Without this option specified express won't be reloaded
@@ -148,7 +148,7 @@ module.exports = function (grunt) {
     nodemon:{
       dev: {
         options: {
-          file: 'server.js',
+          file: 'app.js',
           //args: ['dev'],
           //nodeArgs: ['--debug'],
           ignoredFiles: ['node_modules/**'],
@@ -198,9 +198,9 @@ module.exports = function (grunt) {
     }
 
   });
- 
+
   //grunt.registerTask('server', ['build', 'connect:livereload', 'open', 'watch']);
- 
+
   grunt.registerTask('build', ['cssmin', 'concat', 'uglify']);
 
   grunt.registerTask('launch', ['wait', 'open']);

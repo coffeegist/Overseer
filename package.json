@@ -3,7 +3,7 @@
   "description": "",
   "author": "",
   "version": "0.0.1",
-  "main": "server.js",
+  "main": "app.js",
   "private": true,
   "repository": "",
   "dependencies": {
