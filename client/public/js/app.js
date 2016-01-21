@@ -37,16 +37,13 @@ $(function(){
   });
 
   socket.on("newNode", function(data) {
-    var newNode = new Node(data.ip);
+    var newNode = new Node(data.node);
     nodeManager.addNode(newNode);
   });
 
-  socket.on("deviceList", function(data) {
-    var list = data.list; // list of IP addresses
-
-    var newNode = undefined;
-    for(var i = 0; i < list.length; i++) {
-      newNode = new Node(list[i]);
+  socket.on("nodeList", function(data) {
+    for(var i = 0; i < data.list.length; i++) {
+      var newNode = new Node(data.list[i]);
       nodeManager.addNode(newNode);
     }
   });

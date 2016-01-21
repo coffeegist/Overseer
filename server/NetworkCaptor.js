@@ -1,36 +1,49 @@
-// Required Modules
+// Required Core Modules
 var pcap = require('pcap');
+
+// Required Custom Modules
+var _path = require('path');
+var appPath = _path.dirname(require.main.filename);
+var Node = require(_path.join(appPath, 'server', 'Node'));
+var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
+var SocketUtilities = require(
+  _path.join(appPath, 'server', 'Utilities', 'SocketUtilities')
+);
+
+/* Constants */
 var NC_IPV4 = 2048;
 var NC_ARP = 2054;
 
-function NetworkCaptor(options) {
+function NetworkCaptor(io, options) {
   var self = this;
   var opts = options || {};
-
-  self.session = undefined;
-  self._nodes = [];
-
   self.device = opts.device || opts.Device || '';
   self.filter = opts.filter || opts.Filter || '';
-  self.io = opts.io || opts.IO || undefined;
+  self._pcapSession = undefined;
+  self._nodeManager = undefined;
+  self._io = io;
 
-  if (self._ioObjectIsValid()) {
-    self.io.on('connection', function(socket) {
+  if (SocketUtilities.ioObjectIsValid(self._io)) {
+    self._io.on('connection', function(socket) {
       self._handleSocketTraffic(socket)
     });
+
+    self._nodeManager = new NodeManager(self._io);
+  } else {
+    throw new Error("IO parameter required.");
   }
 }
 
 NetworkCaptor.prototype.start = function() {
   var self = this;
 
-  if (!self._ioObjectIsValid()) {
+  if (!SocketUtilities.ioObjectIsValid(self._io)) {
     throw new Error('Member\'s IO object is invalid.');
   }
 
-  self.session = pcap.createSession(self.device, self.filter);
+  self._pcapSession = pcap.createSession(self.device, self.filter);
 
-  self.session.on('packet', function(raw_packet){
+  self._pcapSession.on('packet', function(raw_packet){
     try {
       var packet = pcap.decode.packet(raw_packet);
       self._processGenericPacket(packet);
@@ -45,33 +58,18 @@ NetworkCaptor.prototype.stop = function() {
   var self = this;
 
   try {
-    if (self.session.opened) {
-      self.session.close();
+    if (self._pcapSession.opened) {
+      self._pcapSession.close();
     }
   } catch (e) {
     // console.log(e);
   }
 };
 
-NetworkCaptor.prototype.sendDeviceList = function(socket) {
-  var self = this;
-
-  socket.emit('deviceList', {list: self._nodes});
-};
-
-NetworkCaptor.prototype._checkNode = function(ip) {
-  var self = this;
-
-  if ( !(self._nodes.indexOf(ip) > -1) ) {
-    self._nodes.push(ip);
-    self.io.sockets.emit('newNode', {ip:ip});
-  }
-};
-
 NetworkCaptor.prototype._emitTrafficMessage = function(trafficEvent) {
   var self = this;
   try {
-    self.io.sockets.emit('traffic', trafficEvent);
+    self._io.sockets.emit('traffic', trafficEvent);
   } catch (e) {
     console.log("NetworkCaptor._emitTrafficMessage: ", e);
   }
@@ -189,11 +187,13 @@ NetworkCaptor.prototype._checkTrafficForNewNodes = function(trafficMessage) {
 
   if (typeof trafficMessage.data !== "undefined") {
     if (typeof trafficMessage.data.sourceIP !== "undefined") {
-      self._checkNode(trafficMessage.data.sourceIP);
+      var newNode = new Node(trafficMessage.data.sourceIP);
+      self._nodeManager.addNode(newNode);
     }
 
     if (typeof trafficMessage.data.destIP !== "undefined") {
-      self._checkNode(trafficMessage.data.destIP);
+      var newNode = new Node(trafficMessage.data.destIP);
+      self._nodeManager.addNode(newNode);
     }
   }
 };
@@ -243,36 +243,21 @@ NetworkCaptor.prototype._getProtocolName = function(protocolNumber) {
   return result;
 };
 
-NetworkCaptor.prototype._ioObjectIsValid = function() {
-  var self = this;
-  var result = true;
-
-  try {
-    if (typeof self.io.sockets !== 'object') {
-      result = false;
-    }
-  } catch (e) {
-    result = false;
-  } finally {
-    return result;
-  }
-};
-
 NetworkCaptor.prototype._handleSocketTraffic = function(socket) {
   var self = this;
 
   socket.on('startCapture', function() {
     self.start();
-    self.io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Starting Capture!</span>"});
+    self._io.sockets.emit('traffic', {
+      msg:"<span style=\"color:red !important\">Starting Capture!</span>"
+    });
   });
 
   socket.on('stopCapture', function() {
     self.stop();
-    self.io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Stopping Capture!</span>"});
-  });
-
-  socket.on('nodeListRequest', function() {
-    self.sendDeviceList(socket);
+    self._io.sockets.emit('traffic', {
+      msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
+    });
   });
 };
 

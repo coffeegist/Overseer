@@ -1,5 +1,5 @@
-function Node(ip) {
-  this._ip = ip;
+function Node(jsonNode) {
+  this._ip = jsonNode.ip;
 }
 
 Node.prototype.getIP = function() {

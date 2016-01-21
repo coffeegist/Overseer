@@ -1,11 +1,12 @@
-var appPath = require('path').dirname(require.main.filename);
+var _path = require('path');
+var appPath = _path.dirname(require.main.filename);
 
-var SocketMessengerFactory = require(appPath + '/server/SocketMessengerFactory');
-var NetworkCaptor = require(appPath + '/server/NetworkCaptor/NetworkCaptor');
+var SocketMessengerFactory = require(_path.join(appPath, 'server', 'SocketMessengerFactory'));
+var NetworkCaptor = require(_path.join(appPath, 'server', 'NetworkCaptor'));
 
 module.exports = function(app) {
   var socketMessenger = SocketMessengerFactory(app);
-  var networkCaptor = new NetworkCaptor({io: socketMessenger.io, device: 'wlan0'});
+  var networkCaptor = new NetworkCaptor(socketMessenger.io, {device: 'wlan0'});
 
   return {
     socketMessenger: socketMessenger,
