@@ -3,22 +3,31 @@ var pcap = require('pcap');
 var NC_IPV4 = 2048;
 var NC_ARP = 2054;
 
-function NetworkCaptor(io, options) {
-  this.session = undefined;
-  this.io = io;
-  this._nodes = [];
-
+function NetworkCaptor(options) {
+  var self = this;
   var opts = options || {};
-  //console.log("Options: ", options);
-  this.device = opts.device || opts.Device || '';
-  this.filter = opts.filter || opts.Filter || '';
+
+  self.session = undefined;
+  self._nodes = [];
+
+  self.device = opts.device || opts.Device || '';
+  self.filter = opts.filter || opts.Filter || '';
+  self.io = opts.io || opts.IO || undefined;
+
+  if (self._ioObjectIsValid()) {
+    self.io.on('connection', function(socket) {
+      self._handleSocketTraffic(socket)
+    });
+  }
 }
 
-NetworkCaptor.prototype.start = function(io) {
+NetworkCaptor.prototype.start = function() {
   var self = this;
-  // Ignore traffic to this server.
-  //this.filter = 'not ip host ' + getDeviceAddressIPv4(this.device);
-  //this.filter = '(ip host 192.168.1.100) and (ip host 192.168.1.115)';
+
+  if (!self._ioObjectIsValid()) {
+    throw new Error('Member\'s IO object is invalid.');
+  }
+
   self.session = pcap.createSession(self.device, self.filter);
 
   self.session.on('packet', function(raw_packet){
@@ -35,8 +44,12 @@ NetworkCaptor.prototype.start = function(io) {
 NetworkCaptor.prototype.stop = function() {
   var self = this;
 
-  if (self.session.opened) {
-    self.session.close();
+  try {
+    if (self.session.opened) {
+      self.session.close();
+    }
+  } catch (e) {
+    // console.log(e);
   }
 };
 
@@ -228,7 +241,40 @@ NetworkCaptor.prototype._getProtocolName = function(protocolNumber) {
   }
 
   return result;
-}
+};
+
+NetworkCaptor.prototype._ioObjectIsValid = function() {
+  var self = this;
+  var result = true;
+
+  try {
+    if (typeof self.io.sockets !== 'object') {
+      result = false;
+    }
+  } catch (e) {
+    result = false;
+  } finally {
+    return result;
+  }
+};
+
+NetworkCaptor.prototype._handleSocketTraffic = function(socket) {
+  var self = this;
+
+  socket.on('startCapture', function() {
+    self.start();
+    self.io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Starting Capture!</span>"});
+  });
+
+  socket.on('stopCapture', function() {
+    self.stop();
+    self.io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Stopping Capture!</span>"});
+  });
+
+  socket.on('nodeListRequest', function() {
+    self.sendDeviceList(socket);
+  });
+};
 
 function ValidateIPaddress(address) {
   var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;

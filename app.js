@@ -8,13 +8,9 @@
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app)
-var io = require('socket.io').listen(server);
 var device  = require('express-device');
-var NetworkCaptor = require('./server/lib/capture');
-var networkCaptor = new NetworkCaptor(io, {device: 'wlan0'});
-
+var sessionManager = require('./server/SessionManagerFactory')(server);
 var runningPortNumber = process.env.PORT || 3000;
-
 
 app.configure(function(){
   // I need to access everything in '/client/public' directly
@@ -27,7 +23,6 @@ app.configure(function(){
   app.use(device.capture());
 });
 
-
 // logs every request
 app.use(function(req, res, next){
   // output every request in the array
@@ -39,29 +34,6 @@ app.use(function(req, res, next){
 
 app.get("/", function(req, res){
   res.render('index', {});
-});
-
-
-io.sockets.on('connection', function (socket) {
-
-  socket.emit('traffic', {
-    msg:"<span style=\"color:red !important\">Connected to Server</span>",
-    data: {type: 'sys'}
-  });
-
-  socket.on('startCapture', function() {
-    networkCaptor.start(io);
-    io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Starting Capture!</span>"});
-  });
-
-  socket.on('stopCapture', function() {
-    networkCaptor.stop();
-    io.sockets.emit('traffic', {msg:"<span style=\"color:red !important\">Stopping Capture!</span>"});
-  });
-
-  socket.on('nodeListRequest', function() {
-    networkCaptor.sendDeviceList(socket);
-  });
 });
 
 console.log("Port: ", runningPortNumber);
