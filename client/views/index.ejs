@@ -44,6 +44,19 @@
         display: block;
       }
 
+      #trafficCanvasContainer {
+        min-height: 100%;
+        height: 100%;
+        width:100%;
+        display:block;
+      }
+
+      .fill {
+        min-height: 100%;
+        height: 100%;
+        width: 100%;
+      }
+
       .stop-button {
         margin: 5px;
       }
@@ -89,8 +102,10 @@
       </div>
     </div>
 
-    <div class="container">
-      <canvas id="trafficCanvas" height="500" width="940"></canvas>
+    <div class="container fill">
+      <div id="trafficCanvasContainer">
+        <canvas id="trafficCanvas" height="500" width="940"></canvas>
+      </div>
     </div>
 
     <footer class="footer">

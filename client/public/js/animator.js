@@ -14,17 +14,20 @@ function getAnimatorSelfInstance(currentThis) {
 
 function Animator() {
   var self = getAnimatorSelfInstance(this);
+  self._setupCanvas();
+  stage.addEventListener("stagemousedown", self._mouseDownHandler);
 
   self.TOPOLOGY_RADIUS = 200;
-  self.TOPOLOGY_CENTER_X = 470;
-  self.TOPOLOGY_CENTER_Y = 250;
-  self.TOPOLOGY_WIDTH = 940;
-  self.TOPOLOGY_HEIGHT = 500;
   self.REDRAW_FREQUENCY = 1000;
+  self.TOPOLOGY_CENTER_X = self._canvas.width/2;
+  self.TOPOLOGY_CENTER_Y = self._canvas.height/2;
+  self.TOPOLOGY_WIDTH = self._canvas.width;
+  self.TOPOLOGY_HEIGHT = self._canvas.height;
 
   self._nodesClassC = new Array();
   self._nodesExternal = new Array();
   self._redrawInterval = 0;
+  self._canvasZoom = 0;
 
   createjs.Ticker.setFPS(60);
   createjs.Ticker.addEventListener("tick", stage);
@@ -203,4 +206,47 @@ Animator.prototype._getTrafficRotation = function(originX, destX, originY, destY
   }
 
   return rotation;
-}
+};
+
+Animator.prototype._setupCanvas = function() {
+  var self = getAnimatorSelfInstance(this);
+
+  self._canvas = document.getElementById("trafficCanvas");
+  var trafficCanvasDimensions =
+    document.getElementById("trafficCanvasContainer").getBoundingClientRect();
+
+  self._canvas.width = trafficCanvasDimensions.width;
+  self._canvas.height = trafficCanvasDimensions.height;
+
+  self._canvas.addEventListener("mousewheel", self._mouseWheelHandler, false);
+  self._canvas.addEventListener("DOMMouseScroll", self._mouseWheelHandler, false);
+};
+
+Animator.prototype._mouseWheelHandler = function(e) {
+  var self = getAnimatorSelfInstance(this);
+
+  if(Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))>0)
+    self._zoom=1.1;
+  else
+    self._zoom=1/1.1;
+        var local = stage.globalToLocal(stage.mouseX, stage.mouseY);
+    stage.regX=local.x;
+    stage.regY=local.y;
+  stage.x=stage.mouseX;
+  stage.y=stage.mouseY;
+  stage.scaleX=stage.scaleY*=self._zoom;
+
+  stage.update();
+};
+
+Animator.prototype._mouseDownHandler = function(e) {
+  var offset={x:stage.x-e.stageX,y:stage.y-e.stageY};
+  stage.addEventListener("stagemousemove",function(ev) {
+    stage.x = ev.stageX+offset.x;
+    stage.y = ev.stageY+offset.y;
+    stage.update();
+  });
+  stage.addEventListener("stagemouseup", function(){
+    stage.removeAllEventListeners("stagemousemove");
+  });
+};
