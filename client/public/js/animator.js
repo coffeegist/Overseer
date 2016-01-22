@@ -17,12 +17,13 @@ function Animator() {
   self._setupCanvas();
   stage.addEventListener("stagemousedown", self._mouseDownHandler);
 
-  self.TOPOLOGY_RADIUS = 200;
+  self.CLASSC_TOPOLOGY_RADIUS = 200;
+  self.EXTERNAL_TOPOLOGY_RADIUS = 400;
   self.REDRAW_FREQUENCY = 1000;
   self.TOPOLOGY_CENTER_X = self._canvas.width/2;
   self.TOPOLOGY_CENTER_Y = self._canvas.height/2;
-  self.TOPOLOGY_WIDTH = self._canvas.width;
-  self.TOPOLOGY_HEIGHT = self._canvas.height;
+  self.CLASSC_TOPOLOGY_WIDTH = self._canvas.width;
+  self.CLASSC_TOPOLOGY_HEIGHT = self._canvas.height;
 
   self._nodesClassC = new Array();
   self._nodesExternal = new Array();
@@ -40,15 +41,16 @@ function Animator() {
 
 Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
+  var newNode = self._createNodeGraphic(ip);
+  stage.addChild(newNode);
 
   if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
-    var newNode = self._createNodeGraphic(ip);
-    stage.addChild(newNode);
     self._nodesClassC[ip] = {graphic: newNode, x: 0, y: 0};
-    self._redrawNodes();
   } else {
-    self._nodesExternal[ip] = ip;
+    self._nodesExternal[ip] = {graphic: newNode, x: 0, y: 0};
   }
+
+  self._redrawNodes();
 };
 
 Animator.prototype.update = function() {
@@ -76,17 +78,23 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   if (sourceAddr in self._nodesClassC) {
     originX = self._nodesClassC[sourceAddr].x;
     originY = self._nodesClassC[sourceAddr].y;
+  } else if (sourceAddr in self._nodesExternal) {
+    originX = self._nodesExternal[sourceAddr].x;
+    originY = self._nodesExternal[sourceAddr].y;
   } else {
-    originX = self.TOPOLOGY_WIDTH / 2;
-    originY = self.TOPOLOGY_HEIGHT / 2;
+    originX = self.CLASSC_TOPOLOGY_WIDTH / 2;
+    originY = self.CLASSC_TOPOLOGY_HEIGHT / 2;
   }
 
   if (destAddr in self._nodesClassC) {
     destX = self._nodesClassC[destAddr].x;
     destY = self._nodesClassC[destAddr].y;
+  } else if (sourceAddr in self._nodesExternal) {
+    destX = self._nodesExternal[destAddr].x;
+    destY = self._nodesExternal[destAddr].y;
   } else {
-    destX = self.TOPOLOGY_WIDTH / 2;
-    destY = self.TOPOLOGY_HEIGHT / 2;;
+    destX = self.CLASSC_TOPOLOGY_WIDTH / 2;
+    destY = self.CLASSC_TOPOLOGY_HEIGHT / 2;
   }
 
   /* Draw laser */
@@ -164,19 +172,44 @@ Animator.prototype._isClassC = function(ip) {
 
 Animator.prototype._redrawNodes = function() {
   var self = getAnimatorSelfInstance(this);
+  self._redrawNodesClassC();
+  self._redrawNodesExternal();
+};
+
+Animator.prototype._redrawNodesClassC = function() {
+  var self = getAnimatorSelfInstance(this);
   var totalNodes = Object.keys(self._nodesClassC).length;
   var current = 0;
   var step = (Math.PI * 2) / totalNodes;
 
   for ( var node in self._nodesClassC ) {
     nodeGraphic = self._nodesClassC[node].graphic;
-    var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.cos(current);
-    var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.sin(current);
+    var newX = self.TOPOLOGY_CENTER_X + self.CLASSC_TOPOLOGY_RADIUS * Math.cos(current);
+    var newY = self.TOPOLOGY_CENTER_Y + self.CLASSC_TOPOLOGY_RADIUS * Math.sin(current);
     createjs.Tween.get(nodeGraphic, {loop: false})
       .to({x: newX, y: newY}, 500, createjs.Ease.linear);
 
     self._nodesClassC[node].x = newX;
     self._nodesClassC[node].y = newY;
+    current += step;
+  }
+};
+
+Animator.prototype._redrawNodesExternal = function() {
+  var self = getAnimatorSelfInstance(this);
+  var totalNodes = Object.keys(self._nodesExternal).length;
+  var current = 0;
+  var step = (Math.PI * 2) / totalNodes;
+
+  for ( var node in self._nodesExternal ) {
+    nodeGraphic = self._nodesExternal[node].graphic;
+    var newX = self.TOPOLOGY_CENTER_X + self.EXTERNAL_TOPOLOGY_RADIUS * Math.cos(current);
+    var newY = self.TOPOLOGY_CENTER_Y + self.EXTERNAL_TOPOLOGY_RADIUS * Math.sin(current);
+    createjs.Tween.get(nodeGraphic, {loop: false})
+      .to({x: newX, y: newY}, 500, createjs.Ease.linear);
+
+    self._nodesExternal[node].x = newX;
+    self._nodesExternal[node].y = newY;
     current += step;
   }
 };
