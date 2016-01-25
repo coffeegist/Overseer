@@ -17,7 +17,7 @@ function Animator() {
   self._setupCanvas();
   stage.addEventListener("stagemousedown", self._mouseDownHandler);
 
-  self.TOPOLOGY_RADIUS = 200;
+  self.TOPOLOGY_RADIUS = 400;
   self.REDRAW_FREQUENCY = 1000;
   self.TOPOLOGY_CENTER_X = self._canvas.width/2;
   self.TOPOLOGY_CENTER_Y = self._canvas.height/2;
@@ -26,28 +26,28 @@ function Animator() {
 
   self._nodesClassC = new Array();
   self._nodesExternal = new Array();
+  self._clusterManager = new ClusterManager();
   self._redrawInterval = 0;
   self._canvasZoom = 0;
 
   createjs.Ticker.setFPS(60);
   createjs.Ticker.addEventListener("tick", stage);
 
-  self._drawRouter();
-
   if( self._redrawInterval > 0 ) clearInterval(self._redrawInterval);
-  self._redrawInterval = setInterval(self._redrawNodes, self.REDRAW_FREQUENCY);
+  self._redrawInterval = setInterval(self._redrawAllClusters, self.REDRAW_FREQUENCY);
 }
 
-Animator.prototype.addNode = function(ip) {
+Animator.prototype.addNode = function(node) {
   var self = getAnimatorSelfInstance(this);
 
-  if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
-    var newNode = self._createNodeGraphic(ip);
-    stage.addChild(newNode);
-    self._nodesClassC[ip] = {graphic: newNode, x: 0, y: 0};
-    self._redrawNodes();
+  node.graphic = self._createNodeGraphic(node.getIP());
+  node.x = 0;
+  node.y = 0;
+
+  if (self._clusterManager.addNode(node, self._isClassC(node.getIP()), stage)) {
+    self._redrawAllClusters();
   } else {
-    self._nodesExternal[ip] = ip;
+    console.log('failed to add node ', node);
   }
 };
 
@@ -60,7 +60,7 @@ Animator.prototype.update = function() {
   // If arg.traffic is present, we are being notified to visualize traffic.
   if (arg.add != undefined) {
     var node = arg.add;
-    self.addNode(node.getIP());
+    self.addNode(node);
   } else if (arg.traffic != undefined) {
     var traffic = arg.traffic;
     self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP());
@@ -72,18 +72,21 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   var originX = 0, originY = 0;
   var destX = 0, destY = 0;
 
+  var sourceNode = self._clusterManager.getNodeByIP(sourceAddr);
+  var destNode = self._clusterManager.getNodeByIP(destAddr);
+
   /* Calculate origin and destination x,y coordinates */
-  if (sourceAddr in self._nodesClassC) {
-    originX = self._nodesClassC[sourceAddr].x;
-    originY = self._nodesClassC[sourceAddr].y;
+  if (sourceNode) {
+    originX = sourceNode.x;
+    originY = sourceNode.y;
   } else {
     originX = self.TOPOLOGY_WIDTH / 2;
     originY = self.TOPOLOGY_HEIGHT / 2;
   }
 
-  if (destAddr in self._nodesClassC) {
-    destX = self._nodesClassC[destAddr].x;
-    destY = self._nodesClassC[destAddr].y;
+  if (destNode) {
+    destX = destNode.x;
+    destY = destNode.y;
   } else {
     destX = self.TOPOLOGY_WIDTH / 2;
     destY = self.TOPOLOGY_HEIGHT / 2;;
@@ -181,12 +184,46 @@ Animator.prototype._redrawNodes = function() {
   }
 };
 
-Animator.prototype._drawRouter = function() {
+Animator.prototype._redrawAllClusters = function() {
   var self = getAnimatorSelfInstance(this);
-  var router = new createjs.Shape();
-  router.graphics.beginFill("Black")
-    .drawCircle(self.TOPOLOGY_CENTER_X, self.TOPOLOGY_CENTER_Y, 12);
-  stage.addChild(router);
+
+  var totalClusters = self._clusterManager.getNumberOfClusters();
+  var current = 0;
+  var step = (Math.PI * 2) / (totalClusters - 1); // -1 account for Center Cluster
+
+  self._redrawCluster(
+    self._clusterManager.getCluster(0),
+    self.TOPOLOGY_CENTER_X,
+    self.TOPOLOGY_CENTER_Y
+  );
+
+  for ( var i=1; i < totalClusters; i++ ) {
+    var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.cos(current);
+    var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.sin(current);
+
+    self._redrawCluster(self._clusterManager.getCluster(i), newX, newY);
+    current += step;
+  }
+};
+
+Animator.prototype._redrawCluster = function(cluster, centerX, centerY) {
+  var self = getAnimatorSelfInstance(this);
+  var totalNodes = cluster.getNumberOfNodes();
+  var current = 0;
+  var step = (Math.PI * 2) / totalNodes;
+
+  for ( var i=0; i < totalNodes; i++ ) {
+    var node = cluster.getNode(i);
+    nodeGraphic = node.graphic;
+    var newX = centerX + (self.TOPOLOGY_RADIUS/4) * Math.cos(current);
+    var newY = centerY + (self.TOPOLOGY_RADIUS/4) * Math.sin(current);
+    createjs.Tween.get(nodeGraphic, {loop: false})
+      .to({x: newX, y: newY}, 500, createjs.Ease.linear);
+
+    node.x = newX;
+    node.y = newY;
+    current += step;
+  }
 };
 
 Animator.prototype._getTrafficRotation = function(originX, destX, originY, destY) {
