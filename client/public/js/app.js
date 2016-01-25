@@ -18,8 +18,7 @@ trafficManager.addObserver(animator);
 // shortcut for document.ready
 $(function(){
   //setup some common vars
-  var $allPostsTextArea = $('#allPosts'),
-    $allTraffic = $('#trafficFeed'),
+  var $allTraffic = $('#trafficFeed'),
     $startButton = $('#startCapture'),
     $stopButton = $('#stopCapture');
 
