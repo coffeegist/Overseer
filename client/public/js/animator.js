@@ -120,6 +120,7 @@ Animator.prototype._beamUpdate = function(e) {
 Animator.prototype._beamComplete = function(e) {
   var self = getAnimatorSelfInstance(this);
   var beam = e.target;
+  stage.removeChild(beam.mask);
   stage.removeChild(beam);
 };
 
