@@ -15,6 +15,10 @@ p{
   padding:0;
 }
 
+.navbar {
+  margin-bottom: 0px;
+}
+
 #trafficCanvas {
   margin: 0 auto;
   display: block;
