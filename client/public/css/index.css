@@ -1,0 +1,49 @@
+html {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 233px;
+  height: 100%;
+}
+
+p{
+  margin:0;
+  padding:0;
+}
+
+#trafficCanvas {
+  margin: 0 auto;
+  display: block;
+}
+
+#trafficFeed {
+  resize: none;
+  font-size: 12px;
+  border-radius: 5px;
+  border: #ccc solid 1px;
+  line-height: 14px;
+  height:80%;
+  overflow-y: auto;
+  width: 100%;
+  height: 100px;
+}
+
+.start-button {
+  margin: 5px;
+}
+
+.stop-button {
+  margin: 5px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 233px;
+}

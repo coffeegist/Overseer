@@ -8,87 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="css/core.css">
-
-    <style>
-      input:focus,
-      select:focus,
-      textarea:focus,
-      button:focus {
-        outline: none !important;
-      }
-
-      #allPosts {
-        resize: none;
-        font-size: 12px;
-        border-radius: 5px;
-        border: #ccc solid 1px;
-        line-height: 14px;
-        height:100px;
-        overflow: scroll;
-      }
-
-      #trafficFeed {
-        resize: none;
-        font-size: 12px;
-        border-radius: 5px;
-        border: #ccc solid 1px;
-        line-height: 14px;
-        height:80%;
-        overflow-y: auto;
-        width: 100%;
-        height: 100px;
-      }
-
-      #trafficCanvas {
-        margin: 0 auto;
-        display: block;
-      }
-
-      #trafficCanvasContainer {
-        min-height: 100%;
-        height: 100%;
-        width:100%;
-        display:block;
-      }
-
-      .fill {
-        min-height: 100%;
-        height: 100%;
-        width: 100%;
-      }
-
-      .stop-button {
-        margin: 5px;
-      }
-
-      .start-button {
-        margin: 5px;
-      }
-
-      p{
-        margin:0;
-        padding:0;
-      }
-
-      /* Sticky footer style */
-      html {
-        position: relative;
-        min-height: 100%;
-      }
-
-      body {
-        /* Margin bottom by footer height */
-        margin-bottom: 233px;
-      }
-
-      .footer {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        /* Set the fixed height of the footer here */
-        height: 233px;
-      }
-    </style>
+    <link rel="stylesheet" href="css/index.css">
   </head>
 
   <body>
@@ -102,11 +22,7 @@
       </div>
     </div>
 
-    <div class="container fill">
-      <div id="trafficCanvasContainer">
-        <canvas id="trafficCanvas" height="500" width="940"></canvas>
-      </div>
-    </div>
+    <canvas id="trafficCanvas" height="500" width="940"></canvas>
 
     <footer class="footer">
       <div class="well" style="margin-bottom: 0px;">

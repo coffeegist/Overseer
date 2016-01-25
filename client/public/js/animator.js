@@ -212,11 +212,16 @@ Animator.prototype._setupCanvas = function() {
   var self = getAnimatorSelfInstance(this);
 
   self._canvas = document.getElementById("trafficCanvas");
-  var trafficCanvasDimensions =
-    document.getElementById("trafficCanvasContainer").getBoundingClientRect();
 
-  self._canvas.width = trafficCanvasDimensions.width;
-  self._canvas.height = trafficCanvasDimensions.height;
+  var navbarDimensions =
+    document.getElementsByClassName("navbar")[0].getBoundingClientRect();
+  var footerDimensions =
+    document.getElementsByTagName("footer")[0].getBoundingClientRect();
+
+  self._canvas.width = document.body.clientWidth;
+  self._canvas.height = document.body.clientHeight
+                        - footerDimensions.height
+                        - navbarDimensions.height;
 
   self._canvas.addEventListener("mousewheel", self._mouseWheelHandler, false);
   self._canvas.addEventListener("DOMMouseScroll", self._mouseWheelHandler, false);
