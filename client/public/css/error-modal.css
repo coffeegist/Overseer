@@ -1,0 +1,41 @@
+.error-modal .modal-header {
+  padding: 0px;
+  border: none;
+}
+
+.error-modal .modal-body {
+  padding: 0px;
+  border: none;
+  margin-bottom: 0px;
+}
+
+.error-modal .modal-footer {
+  padding: 0px;
+  border: none;
+}
+
+.error-modal .alert-danger {
+  margin-bottom: 0px;
+}
+
+.modal-header .alert-danger {
+  -webkit-border-radius: 4px 4px 0px 0px;
+  -moz-border-radius: 4px 4px 0px 0px;
+  border-radius: 4px 4px 0px 0px;
+}
+
+.modal-body .alert-danger {
+  -webkit-border-radius: 0px 0px 0px 0px;
+  -moz-border-radius: 0px 0px 0px 0px;
+  border-radius: 0px 0px 0px 0px;
+}
+
+.modal-footer .alert-danger {
+  -webkit-border-radius: 0px 0px 4px 4px;
+  -moz-border-radius: 0px 0px 4px 4px;
+  border-radius: 0px 0px 4px 4px;
+}
+
+.alert-danger {
+  border: none;
+}

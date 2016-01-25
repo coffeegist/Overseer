@@ -41,17 +41,21 @@ NetworkCaptor.prototype.start = function() {
     throw new Error('Member\'s IO object is invalid.');
   }
 
-  self._pcapSession = pcap.createSession(self.device, self.filter);
+  try {
+    self._pcapSession = pcap.createSession(self.device, self.filter);
 
-  self._pcapSession.on('packet', function(raw_packet){
-    try {
-      var packet = pcap.decode.packet(raw_packet);
-      self._processGenericPacket(packet);
-    } catch (e) {
-      // To many errors. Use log for debug only.
-      //console.log("NetworkCaptor.start: ", e);
-    }
-  });
+    self._pcapSession.on('packet', function(raw_packet){
+      try {
+        var packet = pcap.decode.packet(raw_packet);
+        self._processGenericPacket(packet);
+      } catch (e) {
+        // Too many errors. Use log for debug only.
+        //console.log("NetworkCaptor.start: ", e);
+      }
+    });
+  } catch (e) {
+    self._io.sockets.emit('error', {error: e.message});
+  }
 };
 
 NetworkCaptor.prototype.stop = function() {
@@ -62,7 +66,7 @@ NetworkCaptor.prototype.stop = function() {
       self._pcapSession.close();
     }
   } catch (e) {
-    // console.log(e);
+    self._io.sockets.emit('error', {error: e.message});
   }
 };
 
@@ -185,80 +189,100 @@ NetworkCaptor.prototype._buildTrafficMessage = function(ethertype, etherframe) {
 NetworkCaptor.prototype._checkTrafficForNewNodes = function(trafficMessage) {
   var self = this;
 
-  if (typeof trafficMessage.data !== "undefined") {
-    if (typeof trafficMessage.data.sourceIP !== "undefined") {
-      var newNode = new Node(trafficMessage.data.sourceIP);
-      self._nodeManager.addNode(newNode);
-    }
+  try {
+    if (typeof trafficMessage.data !== "undefined") {
+      if (typeof trafficMessage.data.sourceIP !== "undefined") {
+        var newNode = new Node(trafficMessage.data.sourceIP);
+        self._nodeManager.addNode(newNode);
+      }
 
-    if (typeof trafficMessage.data.destIP !== "undefined") {
-      var newNode = new Node(trafficMessage.data.destIP);
-      self._nodeManager.addNode(newNode);
+      if (typeof trafficMessage.data.destIP !== "undefined") {
+        var newNode = new Node(trafficMessage.data.destIP);
+        self._nodeManager.addNode(newNode);
+      }
     }
+  } catch (e) {
+    console.log("NetworkCaptor._checkTrafficForNewNodes: ", e);
   }
 };
 
 NetworkCaptor.prototype._packageIpv4Data = function(header, message) {
-  message.data.type = 'ip';
-  message.data.sourceIP = header.saddr.toString();
-  message.data.destIP = header.daddr.toString();
-  message.data.protocol = header.protocol;
-  message.data.payload = header.payload;
+  try {
+    message.data.type = 'ip';
+    message.data.sourceIP = header.saddr.toString();
+    message.data.destIP = header.daddr.toString();
+    message.data.protocol = header.protocol;
+    message.data.payload = header.payload;
+  } catch (e) {
+    console.log("NetworkCaptor._packageIpv4Data: ", e);
+  }
 };
 
 NetworkCaptor.prototype._bufferToMAC = function(buffer) {
   var MAC_LENGTH = 6;
   var result = '';
 
-  for (var i=0; i < MAC_LENGTH; i++) {
-    result += buffer[i].toString(16);
-    if (i+1 < MAC_LENGTH) {
-      result += ':';
+  try {
+    for (var i=0; i < MAC_LENGTH; i++) {
+      result += buffer[i].toString(16);
+      if (i+1 < MAC_LENGTH) {
+        result += ':';
+      }
     }
+  } catch (e) {
+    console.log("NetworkCaptor._bufferToMAC: ", e);
+  } finally {
+    return result;
   }
-
-  return result;
 };
 
 NetworkCaptor.prototype._getProtocolName = function(protocolNumber) {
   var result = 'unknown';
 
-  switch (protocolNumber) {
-    case 1:
-      result = 'ICMP';
-      break;
-    case 4:
-      result = 'IPv4';
-      break;
-    case 6:
-      result = 'TCP';
-      break;
-    case 17:
-      result = 'UDP';
-      break;
-    default:
-      break;
+  try {
+    switch (protocolNumber) {
+      case 1:
+        result = 'ICMP';
+        break;
+      case 4:
+        result = 'IPv4';
+        break;
+      case 6:
+        result = 'TCP';
+        break;
+      case 17:
+        result = 'UDP';
+        break;
+      default:
+        break;
+    }
+  } catch (e) {
+    console.log("NetworkCaptor._getProtocolName: ", e);
+  } finally {
+    return result;
   }
-
-  return result;
 };
 
 NetworkCaptor.prototype._handleSocketTraffic = function(socket) {
   var self = this;
 
-  socket.on('startCapture', function() {
-    self.start();
-    self._io.sockets.emit('traffic', {
-      msg:"<span style=\"color:red !important\">Starting Capture!</span>"
+  try {
+    socket.on('startCapture', function() {
+      self.start();
+      self._io.sockets.emit('traffic', {
+        msg:"<span style=\"color:red !important\">Starting Capture!</span>"
+      });
     });
-  });
 
-  socket.on('stopCapture', function() {
-    self.stop();
-    self._io.sockets.emit('traffic', {
-      msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
+    socket.on('stopCapture', function() {
+      self.stop();
+      self._io.sockets.emit('traffic', {
+        msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
+      });
     });
-  });
+  } catch (e) {
+    self._io.sockets.emit('error', {error: e.message});
+  }
 };
 
 function ValidateIPaddress(address) {

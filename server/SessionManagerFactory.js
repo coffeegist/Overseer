@@ -5,11 +5,15 @@ var SocketMessengerFactory = require(_path.join(appPath, 'server', 'SocketMessen
 var NetworkCaptor = require(_path.join(appPath, 'server', 'NetworkCaptor'));
 
 module.exports = function(app) {
-  var socketMessenger = SocketMessengerFactory(app);
-  var networkCaptor = new NetworkCaptor(socketMessenger.io, {device: 'wlan0'});
+  try {
+    var socketMessenger = SocketMessengerFactory(app);
+    var networkCaptor = new NetworkCaptor(socketMessenger.io, {device: 'wlan0'});
 
-  return {
-    socketMessenger: socketMessenger,
-    networkCaptor: networkCaptor
-  };
+    return {
+      socketMessenger: socketMessenger,
+      networkCaptor: networkCaptor
+    };
+  } catch(e) {
+    console.log('SessionManagerFactory: ', e);
+  }
 };

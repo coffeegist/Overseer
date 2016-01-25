@@ -9,12 +9,14 @@
 
     <link rel="stylesheet" href="css/core.css">
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/error-modal.css">
   </head>
 
   <body>
     <!--[if lt IE 8]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
+    <div id="error-modal-container"></div>
 
     <div class="navbar navbar-inverse navbar-static-top">
       <div class="navbar-inner">
@@ -51,6 +53,10 @@
 
     <script src="bower_components/TweenJS/lib/tweenjs-0.6.1.min.js"></script>
     <script>window.createjs.Tween || document.write('<script src="https://code.createjs.com/tweenjs-0.6.1.min.js"><\/script>')</script>
+
+    <script src="bower_components/bootstrap/js/bootstrap-modal.js"></script>
+
+    <script src="js/index.js"></script>
 
     <!-- APP CODE -->
     <script src="js/animator.js"></script>

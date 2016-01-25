@@ -14,7 +14,7 @@ $(function(){
   //setup some common vars
   var $allPostsTextArea = $('#allPosts'),
     $allTraffic = $('#trafficFeed'),
-    $startButton = $('#startCapture');
+    $startButton = $('#startCapture'),
     $stopButton = $('#stopCapture');
 
 
@@ -42,6 +42,10 @@ $(function(){
     }
   });
 
+  socket.on("error", function(data) {
+    showError(data.error);
+  });
+
   $startButton.click(function(e) {
     socket.emit("startCapture");
   });
@@ -49,8 +53,12 @@ $(function(){
   $stopButton.click(function(e) {
     socket.emit("stopCapture");
   });
-
 });
+
+function showError(message) {
+  $("#error-message").html(message);
+  $(".error-modal").modal();
+}
 
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
