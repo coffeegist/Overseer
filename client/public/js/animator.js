@@ -17,15 +17,17 @@ function Animator() {
   self._setupCanvas();
   stage.addEventListener("stagemousedown", self._mouseDownHandler);
 
-  self.TOPOLOGY_RADIUS = 200;
+  self.NODE_RADIUS = 25;
+  self.TOPOLOGY_RADIUS =
+    Math.min(self._canvas.width, self._canvas.height)/2 - self.NODE_RADIUS*2;
   self.REDRAW_FREQUENCY = 1000;
   self.TOPOLOGY_CENTER_X = self._canvas.width/2;
   self.TOPOLOGY_CENTER_Y = self._canvas.height/2;
   self.TOPOLOGY_WIDTH = self._canvas.width;
   self.TOPOLOGY_HEIGHT = self._canvas.height;
 
-  self._nodesClassC = new Array();
-  self._nodesExternal = new Array();
+  self._nodesClassC = [];
+  self._nodesExternal = [];
   self._redrawInterval = 0;
   self._canvasZoom = 0;
 
@@ -38,16 +40,16 @@ function Animator() {
   self._redrawInterval = setInterval(self._redrawNodes, self.REDRAW_FREQUENCY);
 }
 
-Animator.prototype.addNode = function(ip) {
+Animator.prototype.addNode = function(node) {
   var self = getAnimatorSelfInstance(this);
 
-  if (self._isClassC(ip) && !(ip in self._nodesClassC)) {
-    var newNode = self._createNodeGraphic(ip);
-    stage.addChild(newNode);
-    self._nodesClassC[ip] = {graphic: newNode, x: 0, y: 0};
+  if (node.isAddressClassC() && !(self._isNodeTracked(node))) {
+    node.graphic = self._createNodeGraphic(node.getIP());
+    stage.addChild(node.graphic);
+    self._nodesClassC.push(node)
     self._redrawNodes();
   } else {
-    self._nodesExternal[ip] = ip;
+    self._nodesExternal.push(node);
   }
 };
 
@@ -60,7 +62,7 @@ Animator.prototype.update = function() {
   // If arg.traffic is present, we are being notified to visualize traffic.
   if (arg.add != undefined) {
     var node = arg.add;
-    self.addNode(node.getIP());
+    self.addNode(node);
   } else if (arg.traffic != undefined) {
     var traffic = arg.traffic;
     self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP());
@@ -72,18 +74,21 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
   var originX = 0, originY = 0;
   var destX = 0, destY = 0;
 
+  var sourceNode = self._getNodeByIP(sourceAddr);
+  var destNode = self._getNodeByIP(destAddr);
+
   /* Calculate origin and destination x,y coordinates */
-  if (sourceAddr in self._nodesClassC) {
-    originX = self._nodesClassC[sourceAddr].x;
-    originY = self._nodesClassC[sourceAddr].y;
+  if (sourceNode) {
+    originX = sourceNode.x;
+    originY = sourceNode.y;
   } else {
     originX = self.TOPOLOGY_WIDTH / 2;
     originY = self.TOPOLOGY_HEIGHT / 2;
   }
 
-  if (destAddr in self._nodesClassC) {
-    destX = self._nodesClassC[destAddr].x;
-    destY = self._nodesClassC[destAddr].y;
+  if (destNode) {
+    destX = destNode.x;
+    destY = destNode.y;
   } else {
     destX = self.TOPOLOGY_WIDTH / 2;
     destY = self.TOPOLOGY_HEIGHT / 2;;
@@ -125,12 +130,13 @@ Animator.prototype._beamComplete = function(e) {
 };
 
 Animator.prototype._createNodeGraphic = function(ip) {
+  var self = getAnimatorSelfInstance(this);
   var circle = new createjs.Shape();
-  circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
+  circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, self.NODE_RADIUS);
 
   var text = new createjs.Text(ip, "10px Times New Roman", "#000");
   text.x = 0;
-  text.y = 30; // radius of circle plus 5px white space
+  text.y = self.NODE_RADIUS + 5; // radius of circle plus 5px white space
   text.textAlign = "center";
 
   var container = new createjs.Container();
@@ -138,6 +144,40 @@ Animator.prototype._createNodeGraphic = function(ip) {
   container.addChild(text);
 
   return container;
+};
+
+Animator.prototype._isNodeTracked = function(node) {
+  var self = getAnimatorSelfInstance(this);
+  var result = false;
+  var nodeList = undefined;
+
+  if (node.isAddressClassC()) {
+    nodeList = self._nodesClassC;
+  } else {
+    nodeList = self._nodesExternal;
+  }
+
+  for (var i=0; i<nodeList.length; i++) {
+    if (nodeList[i].getIP() == node.getIP()) {
+      result = true;
+    }
+  }
+
+  return result;
+};
+
+Animator.prototype._getNodeByIP = function(ip) {
+  var self = getAnimatorSelfInstance(this);
+  var result = undefined;
+
+  for (var i=0; i<self._nodesClassC.length; i++) {
+    if (self._nodesClassC[i].getIP() == ip) {
+      result = self._nodesClassC[i];
+      break;
+    }
+  }
+
+  return result;
 };
 
 Animator.prototype._findSlope = function(x1, x2, y1, y2) {
@@ -153,31 +193,20 @@ Animator.prototype._slopeToDegrees = function(slope) {
   return Math.atan(slope) * (180/Math.PI);
 };
 
-Animator.prototype._isClassC = function(ip) {
-  var firstOctet = Number(ip.substring(0,3));
-
-  if (firstOctet >= 192 && firstOctet <= 223) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
 Animator.prototype._redrawNodes = function() {
   var self = getAnimatorSelfInstance(this);
-  var totalNodes = Object.keys(self._nodesClassC).length;
+  var totalNodes = self._nodesClassC.length;
   var current = 0;
   var step = (Math.PI * 2) / totalNodes;
 
-  for ( var node in self._nodesClassC ) {
-    nodeGraphic = self._nodesClassC[node].graphic;
+  for (var i=0; i<totalNodes; i++) {
     var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.cos(current);
     var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.sin(current);
-    createjs.Tween.get(nodeGraphic, {loop: false})
+    createjs.Tween.get(self._nodesClassC[i].graphic, {loop: false})
       .to({x: newX, y: newY}, 500, createjs.Ease.linear);
 
-    self._nodesClassC[node].x = newX;
-    self._nodesClassC[node].y = newY;
+    self._nodesClassC[i].x = newX;
+    self._nodesClassC[i].y = newY;
     current += step;
   }
 };
