@@ -2,9 +2,9 @@
   "name": "app",
   "version": "0.0.0",
   "dependencies": {
-    "bootstrap.css": "~2.3.2",
     "EaselJS": "easeljs#0.8.1",
     "TweenJS": "0.6.1",
-    "jquery": "2.1.4"
+    "jquery": "2.1.4",
+    "bootstrap": "~3.3.6"
   }
 }

@@ -201,7 +201,7 @@ module.exports = function (grunt) {
 
   //grunt.registerTask('server', ['build', 'connect:livereload', 'open', 'watch']);
 
-  grunt.registerTask('build', ['cssmin', 'concat', 'uglify']);
+  grunt.registerTask('build', ['less', 'concat', 'uglify']);
 
   grunt.registerTask('launch', ['wait', 'open']);
 
