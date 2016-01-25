@@ -54,7 +54,7 @@ NetworkCaptor.prototype.start = function() {
       }
     });
   } catch (e) {
-    self._io.sockets.emit('error', {error: e.message});
+    self._sendMessage('error', {error: e.message});
   }
 };
 
@@ -66,16 +66,17 @@ NetworkCaptor.prototype.stop = function() {
       self._pcapSession.close();
     }
   } catch (e) {
-    self._io.sockets.emit('error', {error: e.message});
+    self._sendMessage('error', {error: e.message});
   }
 };
 
-NetworkCaptor.prototype._emitTrafficMessage = function(trafficEvent) {
+NetworkCaptor.prototype._sendMessage = function(signal, data) {
   var self = this;
+
   try {
-    self._io.sockets.emit('traffic', trafficEvent);
+    self._io.sockets.emit(signal, data);
   } catch (e) {
-    console.log("NetworkCaptor._emitTrafficMessage: ", e);
+    console.log("NetworkCaptor._sendMessage: ", e);
   }
 };
 
@@ -100,7 +101,7 @@ NetworkCaptor.prototype._processGenericPacket = function(packet) {
 
     if (typeof trafficMessage !== "undefined") {
       self._checkTrafficForNewNodes(trafficMessage);
-      self._emitTrafficMessage(trafficMessage);
+      self._sendMessage('traffic', trafficMessage);
     }
   } catch (e) {
     console.log("NetworkCaptor._processGenericPacket: ", e);
@@ -269,19 +270,19 @@ NetworkCaptor.prototype._handleSocketTraffic = function(socket) {
   try {
     socket.on('startCapture', function() {
       self.start();
-      self._io.sockets.emit('traffic', {
+      self._sendMessage('traffic', {
         msg:"<span style=\"color:red !important\">Starting Capture!</span>"
       });
     });
 
     socket.on('stopCapture', function() {
       self.stop();
-      self._io.sockets.emit('traffic', {
+      self._sendMessage('traffic', {
         msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
       });
     });
   } catch (e) {
-    self._io.sockets.emit('error', {error: e.message});
+    self._sendMessage('error', {error: e.message});
   }
 };
 
