@@ -4,6 +4,7 @@ var pcap = require('pcap');
 // Required Custom Modules
 var _path = require('path');
 var appPath = _path.dirname(require.main.filename);
+var MessageBuilder = require(_path.join(appPath, 'server', 'MessageBuilder'));
 var Node = require(_path.join(appPath, 'server', 'Node'));
 var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
 var SocketUtilities = require(
@@ -11,6 +12,9 @@ var SocketUtilities = require(
 );
 
 /* Constants */
+var NC_ICMP = 1;
+var NC_TCP = 6;
+var NC_UDP = 17;
 var NC_IPV4 = 2048;
 var NC_ARP = 2054;
 
@@ -21,6 +25,7 @@ function NetworkCaptor(io, options) {
   self.filter = opts.filter || opts.Filter || '';
   self._pcapSession = undefined;
   self._nodeManager = undefined;
+  self._mb = new MessageBuilder();
   self._io = io;
 
   if (SocketUtilities.ioObjectIsValid(self._io)) {
@@ -161,12 +166,24 @@ NetworkCaptor.prototype._buildTrafficMessage = function(ethertype, etherframe) {
 
       case NC_IPV4:
         ipHeader = packet.payload;
-        self._packageIpv4Data(ipHeader, trafficMessage);
+        self._mb.setBuilder(self._mb.BUILDERS.IPV4);
+        self._mb.build(ipHeader, trafficMessage);
 
-        if (trafficMessage.data.protocol == 6
-          || trafficMessage.data.protocol == 17) {
-            trafficMessage.data.sourcePort = trafficMessage.data.payload.sport;
-            trafficMessage.data.destPort = trafficMessage.data.payload.dport;
+        switch (trafficMessage.data.protocol) {
+          case NC_ICMP:
+            self._mb.setBuilder(self._mb.BUILDERS.ICMP);
+            self._mb.build(trafficMessage.data.payload, trafficMessage);
+            break;
+
+          case NC_TCP:
+            self._mb.setBuilder(self._mb.BUILDERS.TCP);
+            self._mb.build(trafficMessage.data.payload, trafficMessage);
+            break;
+
+          case NC_UDP:
+            self._mb.setBuilder(self._mb.BUILDERS.UDP);
+            self._mb.build(trafficMessage.data.payload, trafficMessage);
+            break;
         }
 
         trafficMessage.msg =
