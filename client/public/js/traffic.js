@@ -10,10 +10,16 @@ function Traffic(packet) {
       this._sourcePort = packet.sourcePort;
       this._destinationPort = packet.destPort;
       this._payload = packet.payload;
+      this._color = "red";
     } else if (packet.type == 'arp') {
       this._sourceMAC = packet.sourceMAC;
       this._destinationMAC = packet.destMAC;
-      this._payload = packet.payload;
+      this._senderHardwareAddress = packet.senderHardwareAddress;
+      this._senderProtocolAddress = packet.senderProtocolAddress;
+      this._targetHardwareAddress = packet.targetHardwareAddress;
+      this._targetProtocolAddress = packet.targetProtocolAddress;
+      this._operationString = 'ARP ' + packet.opString;
+      this._color = "blue";
     }
   } catch(e) {
     // do nothing.
@@ -24,12 +30,38 @@ Traffic.prototype.getType = function() {
   return this._type;
 };
 
+Traffic.prototype.getColor = function() {
+  return this._color;
+};
+
 Traffic.prototype.getSourceIP = function() {
-  return this._sourceIP;
+  var self = this;
+  var result = undefined;
+
+  if (self._type == 'ip') {
+    result = self._sourceIP;
+  } else if (self._type == 'arp') {
+    result = self._senderProtocolAddress;
+  } else {
+    result = "unknown";
+  }
+
+  return result;
 };
 
 Traffic.prototype.getDestinationIP = function() {
-  return this._destinationIP;
+  var self = this;
+  var result = undefined;
+
+  if (self._type == 'ip') {
+    result = self._destinationIP;
+  } else if (self._type == 'arp') {
+    result = self._targetProtocolAddress;
+  } else {
+    result = "unknown";
+  }
+
+  return result;
 };
 
 Traffic.prototype.getSourceMAC = function() {

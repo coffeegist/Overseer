@@ -1,5 +1,6 @@
 function Node(ip) {
   this._ip = ip;
+  this._mac = undefined;
 }
 
 Node.prototype.getIP = function() {
@@ -8,10 +9,17 @@ Node.prototype.getIP = function() {
   return self._ip;
 };
 
+Node.prototype.getMAC = function() {
+  var self = this;
+
+  return self._mac;
+};
+
 Node.prototype.toJSON = function() {
   var self = this;
   var result = {
-    ip: self._ip
+    ip: self._ip,
+    mac: self._mac
   };
 
   return result;

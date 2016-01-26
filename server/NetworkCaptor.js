@@ -156,16 +156,14 @@ NetworkCaptor.prototype._buildTrafficMessage = function(ethertype, etherframe) {
 
     switch(ethertype) {
       case NC_ARP:
-        trafficMessage.msg = trafficMessage.data.sourceMAC +
-          " <-ARP-> " +
-          trafficMessage.data.destMAC;
+        var arpHeader = packet.payload;
+        self._mb.setBuilder(self._mb.BUILDERS.ARP);
+        self._mb.build(arpHeader, trafficMessage);
 
-        trafficMessage.data.type ='arp';
-        trafficMessage.data.payload = packet.payload || undefined;
       break;
 
       case NC_IPV4:
-        ipHeader = packet.payload;
+        var ipHeader = packet.payload;
         self._mb.setBuilder(self._mb.BUILDERS.IPV4);
         self._mb.build(ipHeader, trafficMessage);
 
@@ -185,11 +183,6 @@ NetworkCaptor.prototype._buildTrafficMessage = function(ethertype, etherframe) {
             self._mb.build(trafficMessage.data.payload, trafficMessage);
             break;
         }
-
-        trafficMessage.msg =
-          trafficMessage.data.sourceIP + ':' + trafficMessage.data.sourcePort +
-          ' <-' + self._getProtocolName(trafficMessage.data.protocol) + '-> ' +
-          trafficMessage.data.destIP + ':' + trafficMessage.data.destPort;
       break;
 
       default:

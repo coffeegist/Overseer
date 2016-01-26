@@ -65,11 +65,11 @@ Animator.prototype.update = function() {
     self.addNode(node);
   } else if (arg.traffic != undefined) {
     var traffic = arg.traffic;
-    self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP());
+    self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP(), traffic.getColor());
   }
 };
 
-Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
+Animator.prototype.displayTraffic = function(sourceAddr, destAddr, color) {
   var self = getAnimatorSelfInstance(this);
   var originX = 0, originY = 0;
   var destX = 0, destY = 0;
@@ -96,7 +96,7 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr) {
 
   /* Draw laser */
   var beam = new createjs.Shape();
-  beam.graphics.beginFill("red");
+  beam.graphics.beginFill(color);
   beam.graphics.moveTo(0, 1.5).lineTo(70, 0).lineTo(70, 3).closePath();
   beam.x = originX;
   beam.y = originY;
