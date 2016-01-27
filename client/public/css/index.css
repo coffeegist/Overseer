@@ -36,6 +36,11 @@ p{
   height: 100px;
 }
 
+.trafficMessage {
+  padding: 0;
+  margin: 0;
+}
+
 .start-button {
   margin: 5px;
 }

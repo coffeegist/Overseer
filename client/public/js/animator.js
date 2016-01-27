@@ -127,6 +127,7 @@ Animator.prototype._beamComplete = function(e) {
   var beam = e.target;
   stage.removeChild(beam.mask);
   stage.removeChild(beam);
+  createjs.Tween.removeTweens(e);
 };
 
 Animator.prototype._createNodeGraphic = function(ip) {

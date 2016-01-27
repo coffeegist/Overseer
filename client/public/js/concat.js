@@ -23,8 +23,8 @@ $(function(){
   socket.emit("nodeListRequest");
 
   socket.on("traffic", function(data) {
-    $allTraffic.prepend(data.msg + '<br/>');
-
+    //$allTraffic.prepend(data.msg + '<br/>');
+    addTrafficToDOM(data.msg);
     var traffic = new Traffic(data.data);
     trafficManager.processTraffic(traffic);
   });
@@ -61,4 +61,13 @@ function showError(message) {
 
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function addTrafficToDOM(traffic) {
+  var trafficFeed = $('#trafficFeed');
+  trafficFeed.prepend("<p class=\"trafficMessage\">" + traffic + "</p>");
+
+  if (trafficFeed[0].childElementCount > 10) {
+    trafficFeed.html(trafficFeed.children().slice(0,10));
+  }
 }
