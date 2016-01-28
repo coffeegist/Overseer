@@ -1,6 +1,6 @@
-function Node(ip) {
+function Node(ip, mac) {
   this._ip = ip;
-  this._mac = undefined;
+  this._mac = mac;
 }
 
 Node.prototype.getIP = function() {

@@ -1,44 +1,41 @@
+var _path = require('path');
+var appPath = _path.dirname(require.main.filename);
+var ProtocolExpert = require(_path.join(appPath, 'server', 'ProtocolExpert'));
+
 function MessageBuilder() {
   var self = this;
-  self.BUILDERS = {
-    IPV4: 0,
-    ARP: 1,
-    ICMP: 2,
-    TCP: 6,
-    UDP: 17
-  };
-
   self._builder = undefined;
 }
 
 MessageBuilder.prototype.build = function(data, message) {
   var self = this;
 
-  return self._builder(data, message);
+  self._builder(data, message);
 };
 
-MessageBuilder.prototype.setBuilder = function(builder) {
+MessageBuilder.prototype.setBuilder = function(protocol) {
   var self = this;
+  var protocolName = ProtocolExpert.getProtocolName(protocol);
 
-  switch(builder) {
-    case self.BUILDERS.IPV4:
-      self._builder = IPV4Builder;
+  switch(protocolName.toUpperCase()) {
+    case 'IPV4':
+      self._builder = self._IPV4Builder;
       break;
 
-    case self.BUILDERS.ARP:
-      self._builder = ARPBuilder;
+    case 'ARP':
+      self._builder = self._ARPBuilder;
       break;
 
-    case self.BUILDERS.ICMP:
-      self._builder = ICMPBuilder;
+    case 'ICMP':
+      self._builder = self._ICMPBuilder;
       break;
 
-    case self.BUILDERS.TCP:
-      self._builder = TCPBuilder;
+    case 'TCP':
+      self._builder = self._TCPBuilder;
       break;
 
-    case self.BUILDERS.UDP:
-      self._builder = UDPBuilder;
+    case 'UDP':
+      self._builder = self._UDPBuilder;
       break;
 
     default:
@@ -46,7 +43,8 @@ MessageBuilder.prototype.setBuilder = function(builder) {
   }
 }
 
-function ARPBuilder(header, message) {
+MessageBuilder.prototype._ARPBuilder = function(header, message) {
+  var self = this;
   message.data.type = 'arp';
 
   var op = header.operation;
@@ -61,40 +59,56 @@ function ARPBuilder(header, message) {
   message.data.operation = op;
 
   var pDelimiter = ':';
+  var pHex = true;
   if (message.data.protocolType == 2048) { // IPv4
     pDelimiter = '.';
+    pHex = false;
   }
   message.data.senderHardwareAddress =
-    addressBufferToString(header.sender_ha.addr, header.hlen, ':');
+    self._addressBufferToString(header.sender_ha.addr, header.hlen, ':', true);
   message.data.senderProtocolAddress =
-    addressBufferToString(header.sender_pa.addr, header.plen, pDelimiter);
+    self._addressBufferToString(header.sender_pa.addr, header.plen, pDelimiter, pHex);
   message.data.targetHardwareAddress =
-    addressBufferToString(header.target_ha.addr, header.hlen, ':');
+    self._addressBufferToString(header.target_ha.addr, header.hlen, ':', true);
   message.data.targetProtocolAddress =
-    addressBufferToString(header.target_pa.addr, header.plen, pDelimiter);
+    self._addressBufferToString(header.target_pa.addr, header.plen, pDelimiter, pHex);
+
+  message.setSourceMAC(message.data.senderHardwareAddress);
+  message.setSourceProtocolAddress(message.data.senderProtocolAddress);
+  message.setTargetMAC(message.data.targetHardwareAddress);
+  message.setTargetProtocolAddress(message.data.targetProtocolAddress);
 
   message.msg = message.data.senderProtocolAddress +
     " <-ARP " + message.data.opString + "-> " +
     message.data.targetProtocolAddress;
 }
 
-function IPV4Builder(header, message) {
+MessageBuilder.prototype._IPV4Builder = function(header, message) {
+  var self = this;
+
   try {
     message.data.type = 'ip';
     message.data.sourceIP = header.saddr.toString();
     message.data.destIP = header.daddr.toString();
     message.data.protocol = header.protocol;
     message.data.payload = header.payload;
+
+    message.setSourceProtocolAddress(message.data.sourceIP);
+    message.setTargetProtocolAddress(message.data.destIP);
+
+    self.setBuilder(message.data.protocol);
+    self.build(message.data.payload, message);
   } catch (e) {
-    console.log("MessageBuilder.build: ", e);
+    console.log("MessageBuilder.IPV4Builder: ", e);
   }
 }
 
-function ICMPBuilder(header, message) {
-  // do nothing
+MessageBuilder.prototype._ICMPBuilder = function(header, message) {
+  message.msg =
+    message.data.sourceIP + ' <-ICMP-> ' + message.data.destIP;
 }
 
-function TCPBuilder(header, message) {
+MessageBuilder.prototype._TCPBuilder = function(header, message) {
   message.data.sourcePort = header.sport;
   message.data.destPort = header.dport;
 
@@ -104,7 +118,7 @@ function TCPBuilder(header, message) {
     message.data.destIP + ':' + message.data.destPort;
 }
 
-function UDPBuilder(header, message) {
+MessageBuilder.prototype._UDPBuilder = function(header, message) {
   message.data.sourcePort = header.sport;
   message.data.destPort = header.dport;
 
@@ -114,11 +128,13 @@ function UDPBuilder(header, message) {
     message.data.destIP + ':' + message.data.destPort;
 }
 
-function addressBufferToString(buffer, length, delimiter) {
+MessageBuilder.prototype._addressBufferToString = function(buffer, length, delimiter, bHex) {
   var result = '';
 
   for (var i=0; i<length; i++) {
-    result += buffer[i] + delimiter;
+    var seq = buffer[i];
+    if (bHex) {seq = seq.toString(16)}
+    result += seq + delimiter;
   }
 
   result = result.substring(0, result.length - 1); // remove last delimiter

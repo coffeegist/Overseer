@@ -9,7 +9,7 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app)
 var device  = require('express-device');
-var sessionManager = require('./server/SessionManagerFactory')(server);
+var dispatcher = require('./server/Dispatcher')(server);
 var runningPortNumber = process.env.PORT || 3000;
 
 app.configure(function(){
