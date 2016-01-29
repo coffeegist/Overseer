@@ -66,12 +66,12 @@ NetworkCaptor.prototype.stop = function() {
   }
 };
 
-function getDeviceAddressIPv4(targetDevice) {
+function getDeviceIPAddress(targetDevice) {
   var result = 'unknown';
   cap.deviceList().forEach(function(device) {
     if( device.name === targetDevice ) {
       device.addresses.forEach(function(address) {
-        if( AddressUtilities.validateIPv4Address(address.addr)) {
+        if( AddressUtilities.isValidIP(address.addr)) {
           result = address.addr;
         }
       });

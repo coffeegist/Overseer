@@ -4,6 +4,7 @@ var protocolNumbers = {
   'TCP': 6,
   'UDP': 17,
   'IPV4': 2048,
+  'IPV6': 34525,
   'ARP': 2054
 };
 function ProtocolExpert() {}

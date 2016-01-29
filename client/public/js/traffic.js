@@ -1,19 +1,24 @@
 function Traffic(packet) {
   try {
     this._type = packet.type;
+    this._senderMAC = packet.sourceMAC;
+    this._targetMAC = packet.destMAC;
 
-    if (packet.type == 'ip') {
-      this._sourceIP = packet.sourceIP;
-      this._destinationIP = packet.destIP;
-      this._sourceMAC = packet.sourceMAC;
-      this._destinationMAC = packet.destMAC;
-      this._sourcePort = packet.sourcePort;
-      this._destinationPort = packet.destPort;
+    if (packet.type == 'ipv4') {
+      this._senderProtocolAddress = packet.sourceIP;
+      this._targetProtocolAddress = packet.destIP;
+      this._senderPort = packet.sourcePort;
+      this._targetPort = packet.destPort;
       this._payload = packet.payload;
       this._color = "red";
+    } else if (packet.type == 'ipv6') {
+      this._senderProtocolAddress = packet.sourceIP;
+      this._targetProtocolAddress = packet.destIP;
+      this._senderPort = packet.sourcePort;
+      this._targetPort = packet.destPort;
+      this._payload = packet.payload;
+      this._color = "green";
     } else if (packet.type == 'arp') {
-      this._sourceMAC = packet.sourceMAC;
-      this._destinationMAC = packet.destMAC;
       this._senderHardwareAddress = packet.senderHardwareAddress;
       this._senderProtocolAddress = packet.senderProtocolAddress;
       this._targetHardwareAddress = packet.targetHardwareAddress;
@@ -38,8 +43,8 @@ Traffic.prototype.getSourceIP = function() {
   var self = this;
   var result = undefined;
 
-  if (self._type == 'ip') {
-    result = self._sourceIP;
+  if (self._type == 'ipv4') {
+    result = self._senderProtocolAddress;
   } else if (self._type == 'arp') {
     result = self._senderProtocolAddress;
   } else {
@@ -53,8 +58,8 @@ Traffic.prototype.getDestinationIP = function() {
   var self = this;
   var result = undefined;
 
-  if (self._type == 'ip') {
-    result = self._destinationIP;
+  if (self._type == 'ipv4' || self._type == 'ipv6') {
+    result = self._targetProtocolAddress;
   } else if (self._type == 'arp') {
     result = self._targetProtocolAddress;
   } else {
@@ -65,11 +70,11 @@ Traffic.prototype.getDestinationIP = function() {
 };
 
 Traffic.prototype.getSourceMAC = function() {
-  return this._sourceMAC;
+  return this._senderMAC;
 };
 
 Traffic.prototype.getDestinationMAC = function() {
-  return this._destinationMAC;
+  return this._targetMAC;
 };
 
 Traffic.prototype.getPayload = function() {
