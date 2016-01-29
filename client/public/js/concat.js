@@ -23,7 +23,6 @@ $(function(){
   socket.emit("nodeListRequest");
 
   socket.on("traffic", function(data) {
-    //$allTraffic.prepend(data.msg + '<br/>');
     addTrafficToDOM(data.msg);
     var traffic = new Traffic(data.data);
     trafficManager.processTraffic(traffic);
