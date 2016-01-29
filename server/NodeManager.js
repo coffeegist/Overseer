@@ -23,7 +23,7 @@ NodeManager.prototype.addNode = function(newNode) {
 
   try {
     if (newNode.getMAC() != "0:0:0:0:0:0") {
-      if (self._findNodeIndexByIP(newNode.getMAC()) < 0) {
+      if (self._findNodeIndexByIP(newNode.getIP()) < 0) {
         self._nodes.push(newNode);
         self.emit('newNode', {
           node: newNode.toJSON()
@@ -41,7 +41,7 @@ NodeManager.prototype.addNode = function(newNode) {
 NodeManager.prototype.removeNode = function(node) {
   var self = this;
   var result = false;
-  var nodeIndex = self._findNodeIndexByMAC(node.getMAC());
+  var nodeIndex = self._findNodeIndexByIP(node.getIP());
 
   try {
     if (nodeIndex > -1) {
@@ -58,7 +58,7 @@ NodeManager.prototype.removeNode = function(node) {
   }
 };
 
-NodeManager.prototype.sendNodeList = function(socket) {
+NodeManager.prototype.getNodeList = function(socket) {
   var self = this;
   var list = [];
 
@@ -66,15 +66,7 @@ NodeManager.prototype.sendNodeList = function(socket) {
     list[i] = self._nodes[i].toJSON();
   }
 
-  socket.emit('nodeList', {list: list});
-};
-
-NodeManager.prototype._handleSocketTraffic = function(socket) {
-  var self = this;
-
-  socket.on('nodeListRequest', function() {
-    self.sendNodeList(socket);
-  });
+  return list;
 };
 
 NodeManager.prototype._findNodeIndexByIP = function(ip) {
@@ -124,9 +116,17 @@ NodeManager.prototype._checkTrafficForNewNodes = function(trafficMessage) {
     newNode = new Node(trafficMessage.getSourceProtocolAddress(), sourceMAC);
     self.addNode(newNode);
 
-    targetMAC = trafficMessage.getTargetMAC() || trafficMessage.data.destMAC;
-    newNode = new Node(trafficMessage.getTargetProtocolAddress(), targetMAC);
-    self.addNode(newNode);
+    // We don't attempt to add the target of an ARP request because
+    //  the target MAC address would be 0:0:0:0:0:0 so....
+    // If it's anything except an arp request, attempt adding it.
+    if (trafficMessage.data.type.toUpperCase() != 'ARP' ||
+        (trafficMessage.data.hasOwnProperty('opString') &&
+          trafficMessage.data.opString.toUpperCase() != 'REQUEST'))
+    {
+      targetMAC = trafficMessage.getTargetMAC() || trafficMessage.data.destMAC;
+      newNode = new Node(trafficMessage.getTargetProtocolAddress(), targetMAC);
+      self.addNode(newNode);
+    }
   } catch (e) {
     console.log("NodeManager._checkTrafficForNewNodes: ", e);
   }

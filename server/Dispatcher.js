@@ -24,17 +24,36 @@ module.exports = function(app) {
     });
 
     socket.on('startCapture', function() {
-      networkCaptor.start();
+      var msg = "";
+
+      if (networkCaptor.start()) {
+        msg = "<span style=\"color:red !important\">Starting Capture!</span>";
+      } else {
+        msg = "<span style=\"color:red !important\">An Error Occurred!</span>";
+      }
       socket.emit('traffic', {
-        msg:"<span style=\"color:red !important\">Starting Capture!</span>"
+        msg: msg,
+        data: {type: 'sys'}
       });
     });
 
     socket.on('stopCapture', function() {
-      networkCaptor.stop();
+      var msg = "";
+
+      if (networkCaptor.stop()) {
+        msg = "<span style=\"color:red !important\">Stopping Capture!</span>";
+      } else {
+        msg = "<span style=\"color:red !important\">An Error Occurred!</span>";
+      }
       socket.emit('traffic', {
-        msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
+        msg: msg,
+        data: {type: 'sys'}
       });
+    });
+
+    socket.on('nodeListRequest', function() {
+      var list = nodeManager.getNodeList(socket);
+      socket.emit('nodeList', {list: list});
     });
   });
 
@@ -43,6 +62,10 @@ module.exports = function(app) {
   /****************************************/
   networkCaptor.on('newPacket', function(packet) {
     trafficProcessor.processGenericPacket(packet);
+  });
+
+  networkCaptor.on('error', function(error) {
+    io.sockets.emit('error', error);
   });
 
   trafficProcessor.on('traffic', function(traffic) {

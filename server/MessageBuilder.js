@@ -1,6 +1,9 @@
 var _path = require('path');
 var appPath = _path.dirname(require.main.filename);
 var ProtocolExpert = require(_path.join(appPath, 'server', 'ProtocolExpert'));
+var AddressUtilities = require(
+  _path.join(appPath, 'server', 'Utilities', 'AddressUtilities')
+);
 
 function MessageBuilder() {
   var self = this;
@@ -41,7 +44,7 @@ MessageBuilder.prototype.setBuilder = function(protocol) {
     default:
       break;
   }
-}
+};
 
 MessageBuilder.prototype._ARPBuilder = function(header, message) {
   var self = this;
@@ -65,13 +68,13 @@ MessageBuilder.prototype._ARPBuilder = function(header, message) {
     pHex = false;
   }
   message.data.senderHardwareAddress =
-    self._addressBufferToString(header.sender_ha.addr, header.hlen, ':', true);
+    AddressUtilities.addressBufferToString(header.sender_ha.addr, header.hlen, ':', true);
   message.data.senderProtocolAddress =
-    self._addressBufferToString(header.sender_pa.addr, header.plen, pDelimiter, pHex);
+    AddressUtilities.addressBufferToString(header.sender_pa.addr, header.plen, pDelimiter, pHex);
   message.data.targetHardwareAddress =
-    self._addressBufferToString(header.target_ha.addr, header.hlen, ':', true);
+    AddressUtilities.addressBufferToString(header.target_ha.addr, header.hlen, ':', true);
   message.data.targetProtocolAddress =
-    self._addressBufferToString(header.target_pa.addr, header.plen, pDelimiter, pHex);
+    AddressUtilities.addressBufferToString(header.target_pa.addr, header.plen, pDelimiter, pHex);
 
   message.setSourceMAC(message.data.senderHardwareAddress);
   message.setSourceProtocolAddress(message.data.senderProtocolAddress);
@@ -81,7 +84,7 @@ MessageBuilder.prototype._ARPBuilder = function(header, message) {
   message.msg = message.data.senderProtocolAddress +
     " <-ARP " + message.data.opString + "-> " +
     message.data.targetProtocolAddress;
-}
+};
 
 MessageBuilder.prototype._IPV4Builder = function(header, message) {
   var self = this;
@@ -101,12 +104,12 @@ MessageBuilder.prototype._IPV4Builder = function(header, message) {
   } catch (e) {
     console.log("MessageBuilder.IPV4Builder: ", e);
   }
-}
+};
 
 MessageBuilder.prototype._ICMPBuilder = function(header, message) {
   message.msg =
     message.data.sourceIP + ' <-ICMP-> ' + message.data.destIP;
-}
+};
 
 MessageBuilder.prototype._TCPBuilder = function(header, message) {
   message.data.sourcePort = header.sport;
@@ -116,7 +119,7 @@ MessageBuilder.prototype._TCPBuilder = function(header, message) {
     message.data.sourceIP + ':' + message.data.sourcePort +
     ' <-TCP-> ' +
     message.data.destIP + ':' + message.data.destPort;
-}
+};
 
 MessageBuilder.prototype._UDPBuilder = function(header, message) {
   message.data.sourcePort = header.sport;
@@ -126,18 +129,6 @@ MessageBuilder.prototype._UDPBuilder = function(header, message) {
     message.data.sourceIP + ':' + message.data.sourcePort +
     ' <-UDP-> ' +
     message.data.destIP + ':' + message.data.destPort;
-}
+};
 
-MessageBuilder.prototype._addressBufferToString = function(buffer, length, delimiter, bHex) {
-  var result = '';
-
-  for (var i=0; i<length; i++) {
-    var seq = buffer[i];
-    if (bHex) {seq = seq.toString(16)}
-    result += seq + delimiter;
-  }
-
-  result = result.substring(0, result.length - 1); // remove last delimiter
-  return result;
-}
 module.exports = MessageBuilder;

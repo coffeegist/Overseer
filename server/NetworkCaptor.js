@@ -7,6 +7,9 @@ var util = require('util');
 var _path = require('path');
 var appPath = _path.dirname(require.main.filename);
 var MessageBuilder = require(_path.join(appPath, 'server', 'MessageBuilder'));
+var AddressUtilities = require(
+  _path.join(appPath, 'server', 'Utilities', 'AddressUtilities')
+);
 var SocketUtilities = require(
   _path.join(appPath, 'server', 'Utilities', 'SocketUtilities')
 );
@@ -24,6 +27,7 @@ util.inherits(NetworkCaptor, EventEmitter);
 
 NetworkCaptor.prototype.start = function() {
   var self = this;
+  var result = false;
 
   try {
     self._pcapSession = pcap.createSession(self.device, self.filter);
@@ -31,77 +35,43 @@ NetworkCaptor.prototype.start = function() {
     self._pcapSession.on('packet', function(raw_packet){
       try {
         var packet = pcap.decode.packet(raw_packet);
-        self._sendMessage('newPacket', packet);
+        self.emit('newPacket', packet);
       } catch (e) {
         // Too many errors. Use log for debug only.
         //console.log("NetworkCaptor.start: ", e);
       }
     });
+
+    result = true;
   } catch (e) {
-    self._sendMessage('error', {error: e.message});
+    self.emit('error', {error: e.message});
+  } finally {
+    return result;
   }
 };
 
 NetworkCaptor.prototype.stop = function() {
   var self = this;
+  var result = false;
 
   try {
     if (self._pcapSession.opened) {
       self._pcapSession.close();
+      result = true;
     }
   } catch (e) {
-    self._sendMessage('error', {error: e.message});
+    self.emit('error', {error: e.message});
+  } finally {
+    return result;
   }
 };
-
-NetworkCaptor.prototype._sendMessage = function(signal, data) {
-  var self = this;
-
-  try {
-    self.emit(signal, data);
-  } catch (e) {
-    console.log("NetworkCaptor._sendMessage: ", e);
-  }
-};
-
-NetworkCaptor.prototype._handleSocketTraffic = function(socket) {
-  var self = this;
-
-  try {
-    socket.on('startCapture', function() {
-      self.start();
-      self._sendMessage('traffic', {
-        msg:"<span style=\"color:red !important\">Starting Capture!</span>"
-      });
-    });
-
-    socket.on('stopCapture', function() {
-      self.stop();
-      self._sendMessage('traffic', {
-        msg:"<span style=\"color:red !important\">Stopping Capture!</span>"
-      });
-    });
-  } catch (e) {
-    self._sendMessage('error', {error: e.message});
-  }
-};
-
-function ValidateIPaddress(address) {
-  var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-  if(address.match(ipformat)) {
-    return true;
-  } else {
-    return false;
-  }
-}
 
 function getDeviceAddressIPv4(targetDevice) {
   var result = 'unknown';
   cap.deviceList().forEach(function(device) {
     if( device.name === targetDevice ) {
       device.addresses.forEach(function(address) {
-        if( ValidateIPaddress(address.addr)) {
+        if( AddressUtilities.validateIPv4Address(address.addr)) {
           result = address.addr;
         }
       });
