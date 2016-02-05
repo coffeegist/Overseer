@@ -1,19 +1,17 @@
-var _path = require('path');
-var appPath = _path.dirname(require.main.filename);
+// Required Core Modules
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
+// Required Custom Modules
+var _path = require('path');
+var appPath = _path.dirname(require.main.filename);
 var Node = require(_path.join(appPath, 'server', 'Node'));
-var SocketUtilities = require(
-  _path.join(appPath, 'server', 'Utilities', 'SocketUtilities')
-);
 
 function NodeManager() {
   var self = this;
   EventEmitter.call(this);
 
-  self._nodes = [];
-  self._nodeBlock = false;
+  self._nodeMap = {};
 }
 util.inherits(NodeManager, EventEmitter);
 
@@ -22,14 +20,13 @@ NodeManager.prototype.addNode = function(newNode) {
   var result = false;
 
   try {
-    if (newNode.getMAC() != "0:0:0:0:0:0") {
-      if (self._findNodeIndexByIP(newNode.getIP()) < 0) {
-        self._nodes.push(newNode);
-        self.emit('newNode', {
-          node: newNode.toJSON()
-        });
-        result = true;
-      }
+    var newIP = newNode.getIP();
+    if (!(newIP in self._nodeMap)) {
+      self._nodeMap[newIP] = newNode;
+      self.emit('newNode', {
+        ip: newIP
+      });
+      result = true;
     }
   } catch (e) {
     console.log('NodeManager.addNode: ', e);
@@ -38,16 +35,15 @@ NodeManager.prototype.addNode = function(newNode) {
   }
 };
 
-NodeManager.prototype.removeNode = function(node) {
+NodeManager.prototype.removeNode = function(ip) {
   var self = this;
   var result = false;
-  var nodeIndex = self._findNodeIndexByIP(node.getIP());
 
   try {
-    if (nodeIndex > -1) {
-      self._nodes.splice(nodeIndex, 1);
+    if (ip in self._nodeMap) {
+      delete self._nodeMap[ip];
       self.emit('removeNode', {
-        node: node.toJSON
+        ip: ip
       });
       result = true;
     }
@@ -58,77 +54,30 @@ NodeManager.prototype.removeNode = function(node) {
   }
 };
 
-NodeManager.prototype.getNodeList = function(socket) {
+NodeManager.prototype.getNodeList = function() {
   var self = this;
   var list = [];
+  var i = 0;
 
-  for (var i=0; i<self._nodes.length; i++) {
-    list[i] = self._nodes[i].toJSON();
+  for (ip in self._nodeMap) {
+    list[i++] = self._nodeMap[ip].getIP();
   }
 
   return list;
 };
 
-NodeManager.prototype._findNodeIndexByIP = function(ip) {
-  var self = this;
-  var result = -1;
-
-  try {
-    for (var i=0; i<self._nodes.length; i++) {
-      if (self._nodes[i].getIP() == ip) {
-        result = i;
-        break;
-      }
-    }
-  } catch (e) {
-    console.log('NodeManager._findNodeIndexByIP: ', e);
-  } finally {
-    return result;
-  }
-};
-
-NodeManager.prototype._findNodeIndexByMAC = function(mac) {
-  var self = this;
-  var result = -1;
-
-  try {
-    for (var i=0; i<self._nodes.length; i++) {
-      if (self._nodes[i].getMAC() == mac) {
-        result = i;
-        break;
-      }
-    }
-  } catch (e) {
-    console.log('NodeManager._findNodeIndexByMAC: ', e);
-  } finally {
-    return result;
-  }
-};
-
-NodeManager.prototype._checkTrafficForNewNodes = function(trafficMessage) {
+NodeManager.prototype.checkTrafficForNewNodes = function(addressArray) {
   var self = this;
   var sourceMAC = undefined;
   var targetMAC = undefined;
   var newNode = undefined;
 
   try {
-    sourceMAC = trafficMessage.getSourceMAC() || trafficMessage.data.sourceMAC;
-    newNode = new Node(trafficMessage.getSourceProtocolAddress(), sourceMAC);
-    self.addNode(newNode);
-
-    // We don't attempt to add the target of an ARP request because
-    //  the target MAC address would be 0:0:0:0:0:0 so....
-    // If it's anything except an arp request, attempt adding it.
-    if (trafficMessage.data.type.toUpperCase() != 'ARP' ||
-        (trafficMessage.data.hasOwnProperty('opString') &&
-          trafficMessage.data.opString.toUpperCase() != 'REQUEST'))
-    {
-      targetMAC = trafficMessage.getTargetMAC() || trafficMessage.data.destMAC;
-      newNode = new Node(trafficMessage.getTargetProtocolAddress(), targetMAC);
-      self.addNode(newNode);
+    for (var i=0; i<addressArray.length; i++) {
+      self.addNode(new Node(addressArray[i]));
     }
   } catch (e) {
-    console.log("NodeManager._checkTrafficForNewNodes: ", e);
+    console.log("NodeManager.checkTrafficForNewNodes: ", e);
   }
 };
 

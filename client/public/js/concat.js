@@ -2,12 +2,7 @@
 var socket = io.connect();
 
 var app = app || {};
-
-var nodeManager = new NodeManager();
-var trafficManager = new TrafficManager();
 var animator = new Animator();
-nodeManager.addObserver(animator);
-trafficManager.addObserver(animator);
 
 // shortcut for document.ready
 $(function(){
@@ -22,21 +17,24 @@ $(function(){
   // Request a list of nodes currently being tracked
   socket.emit("nodeListRequest");
 
+  socket.on("system", function(data) {
+    addMessageToDOM(data.msg);
+  });
+
   socket.on("traffic", function(data) {
-    addTrafficToDOM(data.msg);
-    var traffic = new Traffic(data.data);
-    trafficManager.processTraffic(traffic);
+    var result = animator.displayTraffic(data.traffic[0], data.traffic[1], data.type);
+    if (result) {
+      addMessageToDOM(data.type + "." + result.toString() + ": " + data.msg);
+    }
   });
 
   socket.on("newNode", function(data) {
-    var newNode = new Node(data.node);
-    nodeManager.addNode(newNode);
+    animator.addNode(data.ip);
   });
 
   socket.on("nodeList", function(data) {
     for(var i = 0; i < data.list.length; i++) {
-      var newNode = new Node(data.list[i]);
-      nodeManager.addNode(newNode);
+      animator.addNode(data.list[i]);
     }
   });
 
@@ -62,7 +60,7 @@ function getRandom(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-function addTrafficToDOM(traffic) {
+function addMessageToDOM(traffic) {
   var trafficFeed = $('#trafficFeed');
   trafficFeed.prepend("<p class=\"trafficMessage\">" + traffic + "</p>");
 
