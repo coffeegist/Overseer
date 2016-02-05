@@ -48,6 +48,11 @@ p{
   margin: 5px;
 }
 
+.filter {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

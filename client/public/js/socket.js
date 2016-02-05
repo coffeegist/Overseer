@@ -43,8 +43,3 @@ function addMessageToDOM(traffic) {
     trafficFeed.html(trafficFeed.children().slice(0,10));
   }
 }
-
-function showError(message) {
-  $("#error-message").html(message);
-  $(".error-modal").modal();
-}

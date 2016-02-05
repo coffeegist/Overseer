@@ -36,6 +36,8 @@ function Animator() {
   };
 
   self._nodes = {};
+  self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
+  self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
   self._redrawInterval = 0;
   self._canvasZoom = 0;
 
@@ -50,8 +52,14 @@ function Animator() {
 
 Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
+  var ipObj = ipaddr.parse(ip);
+  var filter = self._networkFilterV4;
 
-  if (!(ip in self._nodes)) {
+  if (ipObj.kind() === 'ipv6') {
+    filter = self._networkFilterV6;
+  }
+
+  if (!(ip in self._nodes) && ipaddr.parse(ip).match(filter)) {
     self._nodes[ip] = {
       graphic : self._createNodeGraphic(ip),
       x : 0,
@@ -71,6 +79,46 @@ Animator.prototype.removeAllNodes = function() {
   }
 };
 
+Animator.prototype.setNetworkFilterV4 = function(newFilter) {
+  var self = getAnimatorSelfInstance(this);
+
+  if (newFilter) {
+    self._networkFilterV4 = newFilter;
+  } else {
+    self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
+  }
+
+  socket.emit("nodeListRequest");
+};
+
+Animator.prototype.resetNetworkFilterV4 = function() {
+  var self = getAnimatorSelfInstance(this);
+
+  self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
+
+  socket.emit("nodeListRequest");
+};
+
+Animator.prototype.setNetworkFilterV6 = function(newFilter) {
+  var self = getAnimatorSelfInstance(this);
+
+  if (newFilter) {
+    self._networkFilterV6 = newFilter;
+  } else {
+    self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
+  }
+
+  socket.emit("nodeListRequest");
+};
+
+Animator.prototype.resetNetworkFilterV6 = function() {
+  var self = getAnimatorSelfInstance(this);
+
+  self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
+  
+  socket.emit("nodeListRequest");
+};
+
 Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
   var self = getAnimatorSelfInstance(this);
   var originX = 0, originY = 0;
@@ -82,7 +130,7 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
     var destNode = self._nodes[destAddr];
 
     /* Calculate origin and destination x,y coordinates */
-    if (sourceNode) {
+    if (sourceNode && sourceNode.graphic) {
       originX = sourceNode.x;
       originY = sourceNode.y;
     } else {
@@ -90,7 +138,7 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
       originY = self.TOPOLOGY_CENTER_Y;
     }
 
-    if (destNode) {
+    if (destNode && destNode.graphic) {
       destX = destNode.x;
       destY = destNode.y;
     } else {
@@ -308,11 +356,6 @@ function addMessageToDOM(traffic) {
     trafficFeed.html(trafficFeed.children().slice(0,10));
   }
 }
-
-function showError(message) {
-  $("#error-message").html(message);
-  $(".error-modal").modal();
-}
 ;var app = app || {};
 var socket = io.connect();
 var animator = new Animator();
@@ -321,6 +364,10 @@ $(function() {
   var $allTraffic = $('#trafficFeed');
   var $startButton = $('#startCapture');
   var $stopButton = $('#stopCapture');
+  var $networkFilterV4 = $('#networkFilterV4');
+  var $networkFilterClearV4 = $('#networkFilterClearV4');
+  var $networkFilterV6 = $('#networkFilterV6');
+  var $networkFilterClearV6 = $('#networkFilterClearV6');
 
   $startButton.click(function(e) {
     socket.emit("startCapture");
@@ -329,4 +376,65 @@ $(function() {
   $stopButton.click(function(e) {
     socket.emit("stopCapture");
   });
+
+  $networkFilterClearV4.click(function(e) {
+    animator.resetNetworkFilterV4();
+    $networkFilterV4.val("");
+  });
+
+  $networkFilterClearV6.click(function(e) {
+    animator.resetNetworkFilterV6();
+    $networkFilterV6.val("");
+  });
+
+  $networkFilterV4.keydown(function(event) {
+    if (!event) {
+      var event = window.event;
+    }
+
+    if (event.which == 13) {
+      event.preventDefault();
+      var networkFilterInput = $networkFilterV4.val();
+      var filter = undefined;
+
+      try {
+        if (networkFilterInput) {
+          filter = ipaddr.IPv4.parseCIDR($networkFilterV4.val());
+          animator.setNetworkFilterV4(filter);
+        } else {
+          animator.resetNetworkFilterV4();
+        }
+      } catch (e) {
+        showError(e);
+      }
+    }
+  });
+
+  $networkFilterV6.keydown(function(event) {
+    if (!event) {
+      var event = window.event;
+    }
+
+    if (event.which == 13) {
+      event.preventDefault();
+      var networkFilterInput = $networkFilterV6.val();
+      var filter = undefined;
+
+      try {
+        if (networkFilterInput) {
+          filter = ipaddr.IPv6.parseCIDR($networkFilterV6.val());
+          animator.setNetworkFilterV6(filter);
+        } else {
+          animator.resetNetworkFilterV6();
+        }
+      } catch (e) {
+        showError(e);
+      }
+    }
+  });
 });
+
+function showError(message) {
+  $("#error-message").html(message);
+  $(".error-modal").modal();
+}

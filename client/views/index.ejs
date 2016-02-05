@@ -29,7 +29,7 @@
     <footer class="footer">
       <div class="well" style="margin-bottom: 0px;">
         <div class="row">
-          <div class="col-xs-5">
+          <div class="col-xs-3 col-xl-5">
             <h3>Network Traffic</h3>
             <div id="trafficFeed" class="form-control"></div>
           </div>
@@ -38,22 +38,44 @@
             <h3>Network Statistics</h3>
           </div>
 
-          <div class="col-xs-2">
+          <div class="col-xs-4 col-xl-2">
             <h3>Network Controls</h3>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="192.168.1.0/24">
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="button">Filter</button>
-              </span>
+
+            <div class="row col-xs-12">
+              <div class="col-xs-6 filter">
+                <label for="networkFilterV4">IPv4 Filter</label>
+                <div class="input-group">
+                  <input id="networkFilterV4" type="text" class="form-control" placeholder="0.0.0.0/0">
+                  <span class="input-group-btn">
+                    <button id="networkFilterClearV4" class="btn btn-default" type="button">
+                      <span class="glyphicon glyphicon-remove" aria-hidden=true></span>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <div class="col-xs-6 filter">
+                <label for="networkFilterV4">IPv6 Filter</label>
+                <div class="input-group">
+                  <input id="networkFilterV6" type="text" class="form-control" placeholder="0::0/0">
+                  <span class="input-group-btn">
+                    <button id="networkFilterClearV6" class="btn btn-default" type="button">
+                      <span class="glyphicon glyphicon-remove" aria-hidden=true></span>
+                    </button>
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div class="input-group" style="margin-bottom: 0;">
-              <span class="input-group-btn">
-                <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
-                <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
-                <div class="clearfix"></div>
-              </span>
-            </div><!-- /input-group -->
+            <div class="row col-xs-12">
+              <div class="input-group">
+                <span class="input-group-btn">
+                  <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
+                  <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
+                  <div class="clearfix"></div>
+                </span>
+              </div><!-- /input-group -->
+            </div>
           </div>
         </div>
       </div>
@@ -74,6 +96,8 @@
     <script>window.createjs.Tween || document.write('<script src="https://code.createjs.com/tweenjs-0.6.1.min.js"><\/script>')</script>
 
     <script src="bower_components/bootstrap/js/modal.js"></script>
+
+    <script src="bower_components/ipaddr.js/lib/ipaddr.js"></script>
 
 
     <!-- APP CODE -->
