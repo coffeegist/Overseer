@@ -59,6 +59,15 @@ Animator.prototype.addNode = function(ip) {
   }
 };
 
+Animator.prototype.removeAllNodes = function() {
+  var self = getAnimatorSelfInstance(this);
+
+  for (var ip in self._nodes) {
+    stage.removeChild(self._nodes[ip].graphic);
+    delete self._nodes[ip];
+  }
+};
+
 Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
   var self = getAnimatorSelfInstance(this);
   var originX = 0, originY = 0;

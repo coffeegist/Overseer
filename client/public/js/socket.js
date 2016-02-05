@@ -3,6 +3,10 @@ $(function() {
     socket.emit("nodeListRequest");
   });
 
+  socket.on("reconnect", function() {
+    socket.emit("nodeListRequest");
+  });
+
   socket.on("system", function(data) {
     addMessageToDOM(data.msg);
   });
