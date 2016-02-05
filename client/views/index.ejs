@@ -28,15 +28,34 @@
 
     <footer class="footer">
       <div class="well" style="margin-bottom: 0px;">
-        <h3>Network Traffic</h3>
-        <div id="trafficFeed" class="form-control"></div>
-        <div class="input-group">
-          <span class="input-group-btn">
-            <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
-            <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
-            <div class="clearfix"></div>
-          </span>
-        </div><!-- /input-group -->
+        <div class="row">
+          <div class="col-xs-5">
+            <h3>Network Traffic</h3>
+            <div id="trafficFeed" class="form-control"></div>
+          </div>
+
+          <div class="col-xs-5">
+            <h3>Network Statistics</h3>
+          </div>
+
+          <div class="col-xs-2">
+            <h3>Network Controls</h3>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="192.168.1.0/24">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button">Filter</button>
+              </span>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 0;">
+              <span class="input-group-btn">
+                <button id="stopCapture" type="button" class="btn btn-danger pull-right stop-button">Stop</button>
+                <button id="startCapture" class="btn btn-success pull-right start-button" type="button">Start</button>
+                <div class="clearfix"></div>
+              </span>
+            </div><!-- /input-group -->
+          </div>
+        </div>
       </div>
     </footer>
 
