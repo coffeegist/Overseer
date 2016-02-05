@@ -65,7 +65,11 @@ module.exports = function (grunt) {
         stripBanners:true
       },
       dist: {
-        src: ['client/public/js/app.js'],
+        src: [
+          'client/public/js/index.js',
+          'client/public/js/animator.js',
+          'client/public/js/socket.js',
+          'client/public/js/app.js'],
         dest: 'client/public/js/concat.js',
       },
     },
