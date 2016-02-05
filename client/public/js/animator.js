@@ -26,8 +26,13 @@ function Animator() {
   self.TOPOLOGY_WIDTH = self._canvas.width;
   self.TOPOLOGY_HEIGHT = self._canvas.height;
 
-  self._nodesClassC = [];
-  self._nodesExternal = [];
+  self._protocolColors = {
+    'arp': 'blue',
+    'ipv4': 'red',
+    'ipv6': 'green'
+  };
+
+  self._nodes = {};
   self._redrawInterval = 0;
   self._canvasZoom = 0;
 
@@ -40,82 +45,76 @@ function Animator() {
   self._redrawInterval = setInterval(self._redrawNodes, self.REDRAW_FREQUENCY);
 }
 
-Animator.prototype.addNode = function(node) {
+Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
 
-  if (node.isAddressClassC() && !(self._isNodeTracked(node))) {
-    node.graphic = self._createNodeGraphic(node.getIP());
-    stage.addChild(node.graphic);
-    self._nodesClassC.push(node)
+  if (!(ip in self._nodes)) {
+    self._nodes[ip] = {
+      graphic : self._createNodeGraphic(ip),
+      x : 0,
+      y : 0
+    };
+    stage.addChild(self._nodes[ip].graphic);
     self._redrawNodes();
-  } else {
-    self._nodesExternal.push(node);
   }
 };
 
-Animator.prototype.update = function() {
-  var self = getAnimatorSelfInstance(this);
-  var arg = arguments[0];
-
-  // If arg.add is present, we are being notified of a new network node
-  //   we should add to our canvas.
-  // If arg.traffic is present, we are being notified to visualize traffic.
-  if (arg.add != undefined) {
-    var node = arg.add;
-    self.addNode(node);
-  } else if (arg.traffic != undefined) {
-    var traffic = arg.traffic;
-    self.displayTraffic(traffic.getSourceIP(), traffic.getDestinationIP(), traffic.getColor());
-  }
-};
-
-Animator.prototype.displayTraffic = function(sourceAddr, destAddr, color) {
+Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
   var self = getAnimatorSelfInstance(this);
   var originX = 0, originY = 0;
   var destX = 0, destY = 0;
+  var result = false;
 
-  var sourceNode = self._getNodeByIP(sourceAddr);
-  var destNode = self._getNodeByIP(destAddr);
+  try {
+    var sourceNode = self._nodes[sourceAddr];
+    var destNode = self._nodes[destAddr];
 
-  /* Calculate origin and destination x,y coordinates */
-  if (sourceNode) {
-    originX = sourceNode.x;
-    originY = sourceNode.y;
-  } else {
-    originX = self.TOPOLOGY_WIDTH / 2;
-    originY = self.TOPOLOGY_HEIGHT / 2;
+    /* Calculate origin and destination x,y coordinates */
+    if (sourceNode) {
+      originX = sourceNode.x;
+      originY = sourceNode.y;
+    } else {
+      originX = self.TOPOLOGY_CENTER_X;
+      originY = self.TOPOLOGY_CENTER_Y;
+    }
+
+    if (destNode) {
+      destX = destNode.x;
+      destY = destNode.y;
+    } else {
+      destX = self.TOPOLOGY_CENTER_X;
+      destY = self.TOPOLOGY_CENTER_Y;
+    }
+
+    /* Draw laser */
+    var beam = new createjs.Shape();
+    beam.graphics.beginFill(self._protocolColors[type]);
+    beam.graphics.moveTo(0, 1.5).lineTo(70, 0).lineTo(70, 3).closePath();
+    beam.x = originX;
+    beam.y = originY;
+    beam.setBounds(0,0,70,3);
+    beam.rotation = self._getTrafficRotation(originX, destX, originY, destY);
+
+    /* Draw mask */
+    var mask = new createjs.Shape();
+    mask.graphics.s("#f00")
+      .moveTo(originX,originY)
+      .lineTo(originX, originY+10).lineTo(destX, destY+10)
+      .lineTo(destX, destY-10).lineTo(originX, originY-10).closePath();
+    beam.mask = mask;
+
+    stage.addChildAt(beam, 0);
+
+    createjs.Tween.get(beam, {loop: false, onChange: self._beamUpdate})
+      .to({x: destX, y: destY, alpha: 1}, 1500, createjs.Ease.linear)
+      .call(self._beamComplete);
+
+    result = true;
+  } catch (e) {
+    console.log('Error displaying traffic: ', e);
+  } finally {
+    return result;
   }
-
-  if (destNode) {
-    destX = destNode.x;
-    destY = destNode.y;
-  } else {
-    destX = self.TOPOLOGY_WIDTH / 2;
-    destY = self.TOPOLOGY_HEIGHT / 2;;
-  }
-
-  /* Draw laser */
-  var beam = new createjs.Shape();
-  beam.graphics.beginFill(color);
-  beam.graphics.moveTo(0, 1.5).lineTo(70, 0).lineTo(70, 3).closePath();
-  beam.x = originX;
-  beam.y = originY;
-  beam.setBounds(0,0,70,3);
-  beam.rotation = self._getTrafficRotation(originX, destX, originY, destY);
-
-  /* Draw mask */
-  var mask = new createjs.Shape();
-  mask.graphics.s("#f00")
-    .moveTo(originX,originY)
-    .lineTo(originX, originY+10).lineTo(destX, destY+10)
-    .lineTo(destX, destY-10).lineTo(originX, originY-10).closePath();
-  beam.mask = mask;
-
-  stage.addChildAt(beam, 0);
-
-  createjs.Tween.get(beam, {loop: false, onChange: self._beamUpdate})
-    .to({x: destX, y: destY, alpha: 1}, 1500, createjs.Ease.linear)
-    .call(self._beamComplete);
 };
 
 Animator.prototype._beamUpdate = function(e) {
@@ -147,40 +146,6 @@ Animator.prototype._createNodeGraphic = function(ip) {
   return container;
 };
 
-Animator.prototype._isNodeTracked = function(node) {
-  var self = getAnimatorSelfInstance(this);
-  var result = false;
-  var nodeList = undefined;
-
-  if (node.isAddressClassC()) {
-    nodeList = self._nodesClassC;
-  } else {
-    nodeList = self._nodesExternal;
-  }
-
-  for (var i=0; i<nodeList.length; i++) {
-    if (nodeList[i].getIP() == node.getIP()) {
-      result = true;
-    }
-  }
-
-  return result;
-};
-
-Animator.prototype._getNodeByIP = function(ip) {
-  var self = getAnimatorSelfInstance(this);
-  var result = undefined;
-
-  for (var i=0; i<self._nodesClassC.length; i++) {
-    if (self._nodesClassC[i].getIP() == ip) {
-      result = self._nodesClassC[i];
-      break;
-    }
-  }
-
-  return result;
-};
-
 Animator.prototype._findSlope = function(x1, x2, y1, y2) {
   if (x1 == x2) {
     return 0;
@@ -196,18 +161,18 @@ Animator.prototype._slopeToDegrees = function(slope) {
 
 Animator.prototype._redrawNodes = function() {
   var self = getAnimatorSelfInstance(this);
-  var totalNodes = self._nodesClassC.length;
+  var totalNodes = Object.keys(self._nodes).length;
   var current = 0;
   var step = (Math.PI * 2) / totalNodes;
 
-  for (var i=0; i<totalNodes; i++) {
+  for (var ip in self._nodes) {
     var newX = self.TOPOLOGY_CENTER_X + self.TOPOLOGY_RADIUS * Math.cos(current);
     var newY = self.TOPOLOGY_CENTER_Y + self.TOPOLOGY_RADIUS * Math.sin(current);
-    createjs.Tween.get(self._nodesClassC[i].graphic, {loop: false})
+    createjs.Tween.get(self._nodes[ip].graphic, {loop: false})
       .to({x: newX, y: newY}, 500, createjs.Ease.linear);
 
-    self._nodesClassC[i].x = newX;
-    self._nodesClassC[i].y = newY;
+    self._nodes[ip].x = newX;
+    self._nodes[ip].y = newY;
     current += step;
   }
 };

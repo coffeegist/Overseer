@@ -35,5 +35,16 @@ AddressUtilities.isValidIP = function(address) {
   return ipaddr.isValid(address);
 };
 
+AddressUtilities.parseIPv4Addresses = function(data) {
+  return data.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g);
+};
+
+AddressUtilities.parseIPv6Addresses = function(data) {
+  return data.match(/\b([0-9a-fA-F]|:){1,4}(:([0-9a-fA-F]{0,4})*){1,7}\b/g);
+};
+
+AddressUtilities.parseMACAddresses = function(data) {
+  return data.match(/\b([0-9a-fA-F]{2}\:){5}[0-9a-fA-F]{2}\b/g);
+};
 
 module.exports = AddressUtilities;

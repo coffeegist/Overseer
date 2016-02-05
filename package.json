@@ -13,8 +13,8 @@
     "express-device": "~0.3.7",
     "cap": "^0.1.0",
     "radioparse": "~0.2.0",
-    "pcap": "git+https://github.com/mranney/node_pcap.git",
-    "ipaddr.js": "git://github.com/whitequark/ipaddr.js.git"
+    "pcap": "git+https://github.com/audrummer15/node_pcap.git",
+    "ipaddr.js": "git://github.com/audrummer15/ipaddr.js.git"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
