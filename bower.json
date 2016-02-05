@@ -5,6 +5,7 @@
     "EaselJS": "easeljs#0.8.1",
     "TweenJS": "0.6.1",
     "jquery": "2.1.4",
-    "bootstrap": "~3.3.6"
+    "bootstrap": "~3.3.6",
+    "ipaddr.js": "https://github.com/audrummer15/ipaddr.js.git#~1.1.0"
   }
 }
