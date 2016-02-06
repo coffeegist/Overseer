@@ -356,12 +356,7 @@ function addMessageToDOM(traffic) {
     trafficFeed.html(trafficFeed.children().slice(0,10));
   }
 }
-;var app = app || {};
-var socket = io.connect();
-var animator = new Animator();
-
-$(function() {
-  var $allTraffic = $('#trafficFeed');
+;$(function () {
   var $startButton = $('#startCapture');
   var $stopButton = $('#stopCapture');
   var $networkFilterV4 = $('#networkFilterV4');
@@ -406,6 +401,8 @@ $(function() {
         }
       } catch (e) {
         showError(e);
+      } finally {
+        $networkFilterV4.blur();
       }
     }
   });
@@ -429,10 +426,15 @@ $(function() {
         }
       } catch (e) {
         showError(e);
+      } finally {
+        $networkFilterV6.blur();
       }
     }
   });
 });
+;var app = app || {};
+var socket = io.connect();
+var animator = new Animator();
 
 function showError(message) {
   $("#error-message").html(message);

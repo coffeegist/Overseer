@@ -69,6 +69,7 @@ module.exports = function (grunt) {
           'client/public/js/index.js',
           'client/public/js/animator.js',
           'client/public/js/socket.js',
+          'client/public/js/network-controls.js',
           'client/public/js/app.js'],
         dest: 'client/public/js/concat.js',
       },
