@@ -67,13 +67,17 @@ TrafficPackager.prototype._packageIPv6 = function(data) {
   try {
     var message = data.toString();
     var addresses = AddressUtilities.parseIPv6Addresses(message);
-    var port = data.payload.dport || '';
+    var port;
     var serviceName = '';
-    if (port !== '') {
-      serviceName = ProtocolExpert.getServiceName(port, data.nextHeader);
-      if (serviceName === 'unknown') {
-        port = data.payload.sport;
+
+    if (data.payload) {
+      port = data.payload.dport || '';
+      if (port !== '') {
         serviceName = ProtocolExpert.getServiceName(port, data.nextHeader);
+        if (serviceName === 'unknown') {
+          port = data.payload.sport;
+          serviceName = ProtocolExpert.getServiceName(port, data.nextHeader);
+        }
       }
     }
 
