@@ -36,6 +36,15 @@ p{
   height: 137px;
 }
 
+#portStatistics-container {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#portStatistics-container div {
+  overflow: inherit;
+}
+
 .trafficMessage {
   padding: 0;
   margin: 0;
