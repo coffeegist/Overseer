@@ -67,10 +67,23 @@ TrafficPackager.prototype._packageIPv6 = function(data) {
   try {
     var message = data.toString();
     var addresses = AddressUtilities.parseIPv6Addresses(message);
+    var port = data.payload.dport || '';
+    var serviceName = '';
+    if (port !== '') {
+      serviceName = ProtocolExpert.getServiceName(port, data.nextHeader);
+      if (serviceName === 'unknown') {
+        port = data.payload.sport;
+        serviceName = ProtocolExpert.getServiceName(port, data.nextHeader);
+      }
+    }
+
     return {
       addresses: addresses,
       type: 'ipv6',
-      msg: message
+      msg: message,
+      protocolName: ProtocolExpert.getProtocolName(data.nextHeader),
+      port: port,
+      serviceName: serviceName
     };
   } catch (e) {
     console.log('TrafficPackager._packageIPv6: ', e, data);
