@@ -34,7 +34,9 @@ function Animator() {
 
   self._nodes = {};
   self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
+  self._showIPv4 = true;
   self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
+  self._showIPv6 = true;
   self._redrawInterval = 0;
   self._canvasZoom = 0;
 
@@ -51,12 +53,13 @@ Animator.prototype.addNode = function(ip) {
   var self = getAnimatorSelfInstance(this);
   var ipObj = ipaddr.parse(ip);
   var filter = self._networkFilterV4;
+  var showNode = ipObj.kind() === 'ipv6' ? self._showIPv6 : self._showIPv4;
 
   if (ipObj.kind() === 'ipv6') {
     filter = self._networkFilterV6;
   }
 
-  if (!(ip in self._nodes) && ipaddr.parse(ip).match(filter)) {
+  if (!(ip in self._nodes) && ipaddr.parse(ip).match(filter) && showNode) {
     self._nodes[ip] = {
       graphic : self._createNodeGraphic(ip),
       x : 0,
@@ -85,7 +88,7 @@ Animator.prototype.setNetworkFilterV4 = function(newFilter) {
     self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
   }
 
-  socket.emit("nodeListRequest");
+  self._resetNodeView();
 };
 
 Animator.prototype.resetNetworkFilterV4 = function() {
@@ -93,7 +96,13 @@ Animator.prototype.resetNetworkFilterV4 = function() {
 
   self._networkFilterV4 = ipaddr.parseCIDR("0.0.0.0/0");
 
-  socket.emit("nodeListRequest");
+  self._resetNodeView();
+};
+
+Animator.prototype.setIPv4Visibility = function(bool) {
+  var self = getAnimatorSelfInstance(this);
+  self._showIPv4 = bool;
+  self._resetNodeView();
 };
 
 Animator.prototype.setNetworkFilterV6 = function(newFilter) {
@@ -105,15 +114,21 @@ Animator.prototype.setNetworkFilterV6 = function(newFilter) {
     self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
   }
 
-  socket.emit("nodeListRequest");
+  self._resetNodeView();
 };
 
 Animator.prototype.resetNetworkFilterV6 = function() {
   var self = getAnimatorSelfInstance(this);
 
   self._networkFilterV6 = ipaddr.parseCIDR("0::0/0");
-  
-  socket.emit("nodeListRequest");
+
+  self._resetNodeView();
+};
+
+Animator.prototype.setIPv6Visibility = function(bool) {
+  var self = getAnimatorSelfInstance(this);
+  self._showIPv6 = bool;
+  self._resetNodeView();
 };
 
 Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
@@ -259,6 +274,10 @@ Animator.prototype._getTrafficRotation = function(originX, destX, originY, destY
   }
 
   return rotation;
+};
+
+Animator.prototype._resetNodeView = function() {
+  socket.emit("nodeListRequest");
 };
 
 Animator.prototype._setupCanvas = function() {

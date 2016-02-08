@@ -1,8 +1,10 @@
 $(function () {
   var $startButton = $('#startCapture');
   var $stopButton = $('#stopCapture');
+  var $ipv4Toggle = $('#ipv4-toggle');
   var $networkFilterV4 = $('#networkFilterV4');
   var $networkFilterClearV4 = $('#networkFilterClearV4');
+  var $ipv6Toggle = $('#ipv6-toggle');
   var $networkFilterV6 = $('#networkFilterV6');
   var $networkFilterClearV6 = $('#networkFilterClearV6');
 
@@ -12,6 +14,14 @@ $(function () {
 
   $stopButton.click(function(e) {
     socket.emit("stopCapture");
+  });
+
+  $ipv4Toggle.change(function() {
+    animator.setIPv4Visibility($(this).prop('checked'));
+  });
+
+  $ipv6Toggle.change(function() {
+    animator.setIPv6Visibility($(this).prop('checked'));
   });
 
   $networkFilterClearV4.click(function(e) {

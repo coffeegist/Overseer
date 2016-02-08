@@ -6,6 +6,7 @@
     "TweenJS": "0.6.1",
     "jquery": "2.1.4",
     "bootstrap": "~3.3.6",
-    "ipaddr.js": "https://github.com/audrummer15/ipaddr.js.git#~1.1.0"
+    "ipaddr.js": "https://github.com/audrummer15/ipaddr.js.git#~1.1.0",
+    "bootstrap-toggle": "^2.2.1"
   }
 }

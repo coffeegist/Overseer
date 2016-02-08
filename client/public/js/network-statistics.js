@@ -7,12 +7,9 @@ var NetworkStatistics = (function() {
     });
 
     for (var i=Math.min(5,_serviceTrackingMap.length); i-- ;) {
-      var serviceName = $('#service' + i);
-      var count = $('#count' + i);
-      var port = $('#port' + i);
-      serviceName.html('<strong>' + _serviceTrackingMap[i].serviceName + '</strong>');
-      count.html('<strong>' + _serviceTrackingMap[i].count + '</strong>');
-      port.html('<strong>' + _serviceTrackingMap[i].port + '</strong>');
+      $('#service' + i).html('<strong>' + _serviceTrackingMap[i].serviceName + '</strong>');
+      $('#count' + i).html('<strong>' + _serviceTrackingMap[i].count + '</strong>');
+      $('#port' + i).html('<strong>' + _serviceTrackingMap[i].port + '</strong>');
     }
   };
 
