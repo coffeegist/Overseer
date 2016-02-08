@@ -5,10 +5,6 @@ var appPath = _path.dirname(require.main.filename);
 var NetworkCaptor = require(_path.join(appPath, 'server', 'NetworkCaptor'));
 var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
 var TrafficPackager = require(_path.join(appPath, 'server', 'TrafficPackager'));
-var AddressUtilities = require(
-  _path.join(appPath, 'server', 'Utilities', 'AddressUtilities')
-);
-var ProtocolExpert = require(_path.join(appPath, 'server', 'ProtocolExpert'));
 
 module.exports = function(app) {
   var networkCaptor = new NetworkCaptor({device: 'en0'});
