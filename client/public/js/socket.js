@@ -16,7 +16,7 @@ $(function() {
     if (result) {
       addMessageToDOM(data.type + " - " + data.msg);
       if (data.serviceName) {
-        NetworkStatistics.addServiceCount(data.serviceName);
+        NetworkStatistics.addServiceCount(data.serviceName, data.port);
       }
     }
   });

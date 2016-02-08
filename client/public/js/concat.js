@@ -329,7 +329,7 @@ Animator.prototype._mouseDownHandler = function(e) {
     if (result) {
       addMessageToDOM(data.type + " - " + data.msg);
       if (data.serviceName) {
-        NetworkStatistics.addServiceCount(data.serviceName);
+        NetworkStatistics.addServiceCount(data.serviceName, data.port);
       }
     }
   });
@@ -446,16 +446,18 @@ function addMessageToDOM(traffic) {
     for (var i=Math.min(5,_serviceTrackingMap.length); i-- ;) {
       var serviceName = $('#service' + i);
       var count = $('#count' + i);
+      var port = $('#port' + i);
       serviceName.html('<strong>' + _serviceTrackingMap[i].serviceName + '</strong>');
       count.html('<strong>' + _serviceTrackingMap[i].count + '</strong>');
+      port.html('<strong>' + _serviceTrackingMap[i].port + '</strong>');
     }
   };
 
   return {
-    addServiceCount : function(serviceName) {
+    addServiceCount : function(serviceName, port) {
       var element = undefined;
       for (var i=_serviceTrackingMap.length; i-- ;) {
-        if (_serviceTrackingMap[i].serviceName === serviceName) {
+        if (_serviceTrackingMap[i].port === port) {
           element = _serviceTrackingMap[i];
           break;
         }
@@ -464,7 +466,8 @@ function addMessageToDOM(traffic) {
       if (typeof element === 'undefined') {
         _serviceTrackingMap.push({
           serviceName: serviceName,
-          count: 1
+          count: 1,
+          port: port
         });
       } else {
         element.count++;
