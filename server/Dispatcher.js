@@ -4,13 +4,16 @@ var appPath = _path.dirname(require.main.filename);
 
 var NetworkCaptor = require(_path.join(appPath, 'server', 'NetworkCaptor'));
 var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
+var TrafficPackager = require(_path.join(appPath, 'server', 'TrafficPackager'));
 var AddressUtilities = require(
   _path.join(appPath, 'server', 'Utilities', 'AddressUtilities')
 );
+var ProtocolExpert = require(_path.join(appPath, 'server', 'ProtocolExpert'));
 
 module.exports = function(app) {
-  var networkCaptor = new NetworkCaptor({device: 'wlan0'});
+  var networkCaptor = new NetworkCaptor({device: 'en0'});
   var nodeManager = new NodeManager();
+  var trafficPackager = new TrafficPackager();
   var io = socketio.listen(app);
   io.set('log level', 1);
 
@@ -58,48 +61,15 @@ module.exports = function(app) {
   /* Communication of back end components */
   /****************************************/
   networkCaptor.on("arp", function(data) {
-    try {
-      var message = data.toString();
-      var addresses = AddressUtilities.parseIPv4Addresses(message);
-      nodeManager.checkTrafficForNewNodes(addresses);
-      io.sockets.emit('traffic', {
-        traffic: addresses,
-        type: 'arp',
-        msg: message
-      });
-    } catch (e) {
-      console.log('ARP Signal Error: ', e);
-    }
+    trafficPackager.packageTraffic(data, 'arp');
   });
 
   networkCaptor.on("ipv4", function(data) {
-    try {
-      var message = data.toString();
-      var addresses = AddressUtilities.parseIPv4Addresses(message);
-      nodeManager.checkTrafficForNewNodes(addresses);
-      io.sockets.emit('traffic', {
-        traffic: addresses,
-        type: 'ipv4',
-        msg: message
-      });
-    } catch (e) {
-      console.log('IPv4 Signal Error: ', e);
-    }
+    trafficPackager.packageTraffic(data, 'ipv4');
   });
 
   networkCaptor.on("ipv6", function(data) {
-    try {
-      var message = data.toString();
-      var addresses = AddressUtilities.parseIPv6Addresses(message);
-      nodeManager.checkTrafficForNewNodes(addresses);
-      io.sockets.emit('traffic', {
-        traffic: addresses,
-        type: 'ipv6',
-        msg: message
-      });
-    } catch (e) {
-      console.log('IPv6 Signal Error: ', e);
-    }
+    trafficPackager.packageTraffic(data, 'ipv6');
   });
 
   networkCaptor.on('error', function(error) {
@@ -108,5 +78,10 @@ module.exports = function(app) {
 
   nodeManager.on('newNode', function(nodeData) {
     io.sockets.emit('newNode', nodeData);
+  });
+
+  trafficPackager.on('trafficPackageReady', function(traffic) {
+    nodeManager.checkTrafficForNewNodes(traffic.addresses);
+    io.sockets.emit('traffic', traffic);
   });
 };

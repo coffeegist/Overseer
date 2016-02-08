@@ -36,6 +36,33 @@
 
           <div class="col-xs-5">
             <h3>Network Statistics</h3>
+            <div id="portStatistics-container" style="overflow: auto;">
+              <div class="col-xs-2 text-center">
+                <strong>Rank</strong>
+                <div id="rank0"><strong>1</strong></div>
+                <div id="rank1"><strong>2</strong></div>
+                <div id="rank2"><strong>3</strong></div>
+                <div id="rank3"><strong>4</strong></div>
+                <div id="rank4"><strong>5</strong></div>
+              </div>
+              <div class="col-xs-4 text-center">
+                <strong>Service</strong>
+                <div id="service0"></div>
+                <div id="service1"></div>
+                <div id="service2"></div>
+                <div id="service3"></div>
+                <div id="service4"></div>
+              </div>
+              <div class="col-xs-2 text-center">
+                <strong>Count</strong>
+                <div id="count0"></div>
+                <div id="count1"></div>
+                <div id="count2"></div>
+                <div id="count3"></div>
+                <div id="count4"></div>
+              </div>
+              <div id="portStatistics"></div>
+            </div>
           </div>
 
           <div class="col-xs-4 col-xl-2">
@@ -99,7 +126,6 @@
     <script src="bower_components/bootstrap/js/modal.js"></script>
 
     <script src="bower_components/ipaddr.js/lib/ipaddr.js"></script>
-
 
     <!-- APP CODE -->
     <script src="js/app.min.js"></script>

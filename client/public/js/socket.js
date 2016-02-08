@@ -12,9 +12,12 @@ $(function() {
   });
 
   socket.on("traffic", function(data) {
-    var result = animator.displayTraffic(data.traffic[0], data.traffic[1], data.type);
+    var result = animator.displayTraffic(data.addresses[0], data.addresses[1], data.type);
     if (result) {
-      addMessageToDOM(data.type + "." + result.toString() + ": " + data.msg);
+      addMessageToDOM(data.type + " - " + data.msg);
+      if (data.serviceName) {
+        NetworkStatistics.addServiceCount(data.serviceName);
+      }
     }
   });
 
