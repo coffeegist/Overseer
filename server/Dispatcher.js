@@ -7,7 +7,7 @@ var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
 var TrafficPackager = require(_path.join(appPath, 'server', 'TrafficPackager'));
 
 module.exports = function(app) {
-  var networkCaptor = new NetworkCaptor({device: 'en0'});
+  var networkCaptor = new NetworkCaptor({device: 'wlan0'});
   var nodeManager = new NodeManager();
   var trafficPackager = new TrafficPackager();
   var io = socketio.listen(app);

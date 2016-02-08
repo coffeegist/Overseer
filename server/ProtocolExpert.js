@@ -35,19 +35,19 @@ ProtocolExpert.getProtocolName = function(number) {
   return result;
 };
 
-ProtocolExpert.getPortNumber = function(name, protocolNumber) {
+ProtocolExpert.getPortNumber = function(serviceName, protocolNumber) {
   var result = '';
 
   if (protocolNumber == protocolNumbers['tcp']) {
-    result = tcpInfo[name.toLowerCase()];
+    result = tcpInfo[serviceName.toLowerCase()];
   } else if (protocolNumber == protocolNumbers['udp']) {
-    result = udpInfo[name.toLowerCase()];
+    result = udpInfo[serviceName.toLowerCase()];
   }
 
   return result;
 };
 
-ProtocolExpert.getServiceName = function(number, protocolNumber) {
+ProtocolExpert.getServiceName = function(portNumber, protocolNumber) {
   var result = 'unknown';
   var protocolInfo;
 
@@ -59,7 +59,7 @@ ProtocolExpert.getServiceName = function(number, protocolNumber) {
 
   for (var prop in protocolInfo) {
     if (protocolInfo.hasOwnProperty(prop)) {
-      if (protocolInfo[prop] === number) {
+      if (protocolInfo[prop] === portNumber) {
         result = prop;
         break;
       }
