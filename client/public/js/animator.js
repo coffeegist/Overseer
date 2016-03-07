@@ -134,6 +134,7 @@ Animator.prototype.setIPv6Visibility = function(bool) {
 Animator.prototype.addTraffic = function(sourceAddr, destAddr, type) {
   var self = getAnimatorSelfInstance(this);
   var result = false;
+  var destIP = ipaddr.parse(destAddr);
 
   try {
     var cidrRange = self._isMulticast(destAddr);
@@ -141,8 +142,11 @@ Animator.prototype.addTraffic = function(sourceAddr, destAddr, type) {
       self.displayTraffic(sourceAddr, destAddr, type);
     } else {
       for (var ip in self._nodes) {
-        if (ipaddr.parse(ip).match(ipaddr.parse(destAddr), cidrRange)) {
-          self.displayTraffic(sourceAddr, ip, type);
+        var checkedIP = ipaddr.parse(ip);
+        if (checkedIP.kind() == destIP.kind()) {
+          if (checkedIP.match(destIP, cidrRange)) {
+            self.displayTraffic(sourceAddr, ip, type);
+          }
         }
       }
     }
@@ -182,21 +186,31 @@ Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
       destY = self.TOPOLOGY_CENTER_Y;
     }
 
+    var rotation = self._getTrafficRotation(originX, destX, originY, destY);
+    var beamHeight = 3;
+
     /* Draw laser */
     var beam = new createjs.Shape();
     beam.graphics.beginFill(self._protocolColors[type]);
-    beam.graphics.moveTo(0, 1.5).lineTo(70, 0).lineTo(70, 3).closePath();
+    beam.graphics.moveTo(0, 1.5) // beamHeight / 2
+      .lineTo(70, 0).lineTo(70, beamHeight).closePath();
     beam.x = originX;
     beam.y = originY;
-    beam.setBounds(0,0,70,3);
-    beam.rotation = self._getTrafficRotation(originX, destX, originY, destY);
+    beam.regX = 0;
+    beam.regY = 1.5; // beamHeight / 2
+    beam.rotation = rotation;
 
     /* Draw mask */
-    var mask = new createjs.Shape();
-    mask.graphics.s("#f00")
-      .moveTo(originX,originY)
-      .lineTo(originX, originY+10).lineTo(destX, destY+10)
-      .lineTo(destX, destY-10).lineTo(originX, originY-10).closePath();
+    var height = 10;
+    var width =
+      self._calculateDistanceBetweenPoints(originX, originY, destX, destY);
+    var graphics = new createjs.Graphics().drawRect(0, 0, width, height);
+    var mask = new createjs.Shape(graphics);
+    mask.x = originX;
+    mask.y = originY;
+    mask.regX = 0;
+    mask.regY = 5; // height / 2
+    mask.rotation = rotation;
     beam.mask = mask;
 
     stage.addChildAt(beam, 0);
@@ -254,6 +268,10 @@ Animator.prototype._slopeToDegrees = function(slope) {
   // slope to angle to degrees
   return Math.atan(slope) * (180/Math.PI);
 };
+
+Animator.prototype._calculateDistanceBetweenPoints = function(x1, y1, x2, y2) {
+  return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
+}
 
 Animator.prototype._redrawNodes = function() {
   var self = getAnimatorSelfInstance(this);
