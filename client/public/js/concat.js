@@ -144,7 +144,6 @@ Animator.prototype.addTraffic = function(sourceAddr, destAddr, type) {
       self.displayTraffic(sourceAddr, destAddr, type);
     } else {
       for (var ip in self._nodes) {
-        console.log(ip, destAddr, cidrRange);
         if (ipaddr.parse(ip).match(ipaddr.parse(destAddr), cidrRange)) {
           self.displayTraffic(sourceAddr, ip, type);
         }
@@ -365,11 +364,10 @@ Animator.prototype._isMulticast = function(address) {
     if (ip.kind() == 'ipv6') {
       // TODO, more accurate multicast simulation.
       // http://ipv6friday.org/blog/2011/12/ipv6-multicast/
-      result = ip.range() == 'multicast' ? 0 : -1;
+      result = ip.range() == 'multicast' ? 16 : -1;
     } else {
       var octets = ip.octets;
       for (i=0; i<octets.length; i++) {
-        console.log('octet ' + octets[i])
         if (octets[i] == 255) {
           if (!lastOctetWasBroadcast) {
             result = 8 * i;
@@ -384,7 +382,6 @@ Animator.prototype._isMulticast = function(address) {
   } catch (e) {
     console.log(e);
   } finally {
-    console.log('returning: ' + result + ' for ', address)
     return result;
   }
 };

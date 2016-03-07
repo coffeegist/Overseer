@@ -365,7 +365,6 @@ Animator.prototype._isMulticast = function(address) {
     } else {
       var octets = ip.octets;
       for (i=0; i<octets.length; i++) {
-        console.log('octet ' + octets[i])
         if (octets[i] == 255) {
           if (!lastOctetWasBroadcast) {
             result = 8 * i;
@@ -380,7 +379,6 @@ Animator.prototype._isMulticast = function(address) {
   } catch (e) {
     console.log(e);
   } finally {
-    console.log('returning: ' + result + ' for ', address)
     return result;
   }
 };
