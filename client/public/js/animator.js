@@ -131,6 +131,30 @@ Animator.prototype.setIPv6Visibility = function(bool) {
   self._resetNodeView();
 };
 
+Animator.prototype.addTraffic = function(sourceAddr, destAddr, type) {
+  var self = getAnimatorSelfInstance(this);
+  var result = false;
+
+  try {
+    var cidrRange = self._isMulticast(destAddr);
+    if (cidrRange == -1 || (type != 'ipv4' && type != 'ipv6')) {
+      self.displayTraffic(sourceAddr, destAddr, type);
+    } else {
+      for (var ip in self._nodes) {
+        if (ipaddr.parse(ip).match(ipaddr.parse(destAddr), cidrRange)) {
+          self.displayTraffic(sourceAddr, ip, type);
+        }
+      }
+    }
+
+    result = true;
+  } catch (e) {
+    console.log('Error adding traffic: ', e);
+  } finally {
+    return result;
+  }
+};
+
 Animator.prototype.displayTraffic = function(sourceAddr, destAddr, type) {
   var self = getAnimatorSelfInstance(this);
   var originX = 0, originY = 0;
@@ -326,4 +350,37 @@ Animator.prototype._mouseDownHandler = function(e) {
   stage.addEventListener("stagemouseup", function(){
     stage.removeAllEventListeners("stagemousemove");
   });
+};
+
+Animator.prototype._isMulticast = function(address) {
+  var ip = ipaddr.parse(address);
+  var lastOctetWasBroadcast = false;
+  var result = 0;
+
+  try {
+    if (ip.kind() == 'ipv6') {
+      // TODO, more accurate multicast simulation.
+      // http://ipv6friday.org/blog/2011/12/ipv6-multicast/
+      result = ip.range() == 'multicast' ? 16 : -1;
+    } else {
+      var octets = ip.octets;
+      for (i=0; i<octets.length; i++) {
+        console.log('octet ' + octets[i])
+        if (octets[i] == 255) {
+          if (!lastOctetWasBroadcast) {
+            result = 8 * i;
+          }
+          lastOctetWasBroadcast = true;
+        } else {
+          result = -1
+          lastOctetWasBroadcast = false;
+        }
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  } finally {
+    console.log('returning: ' + result + ' for ', address)
+    return result;
+  }
 };
