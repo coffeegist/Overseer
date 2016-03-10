@@ -84,7 +84,6 @@ $(function() {
   function updateCurrentInterface(interfaceName) {
     $('.current-interface').each(function() {
       $(this).html(interfaceName);
-      console.log(this);
     });
   };
 
