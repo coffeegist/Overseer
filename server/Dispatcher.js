@@ -7,7 +7,7 @@ var NodeManager = require(_path.join(appPath, 'server', 'NodeManager'));
 var TrafficPackager = require(_path.join(appPath, 'server', 'TrafficPackager'));
 
 module.exports = function(app) {
-  var networkCaptor = new NetworkCaptor({device: 'wlan0'});
+  var networkCaptor = new NetworkCaptor();
   var nodeManager = new NodeManager();
   var trafficPackager = new TrafficPackager();
   var io = socketio.listen(app);
@@ -51,6 +51,27 @@ module.exports = function(app) {
       var list = nodeManager.getNodeList(socket);
       socket.emit('nodeList', {list: list});
     });
+
+    socket.on('updateCurrentInterface', function(data) {
+      networkCaptor.setDevice(data.name);
+      socket.emit('interfaceSettings', networkCaptor.getDeviceSettings());
+    });
+
+    socket.on('getInterfaceSettings', function() {
+      socket.emit('interfaceSettings', networkCaptor.getDeviceSettings());
+    });
+
+    socket.on('interfaceListRequest', function() {
+      socket.emit('interfaceList', {list: networkCaptor.getDeviceList()});
+    });
+
+    socket.on('enableMonitorMode', function(data) {
+      var result = networkCaptor.enableMonitorMode(data.enable);
+
+      socket.emit('monitorModeChanged', {
+        enabled: result
+      });
+    });
   });
 
   /****************************************/
@@ -66,6 +87,10 @@ module.exports = function(app) {
 
   networkCaptor.on("ipv6", function(data) {
     trafficPackager.packageTraffic(data, 'ipv6');
+  });
+
+  networkCaptor.on("airmon-finished", function() {
+    io.sockets.emit('interfaceList', {list: networkCaptor.getDeviceList()});
   });
 
   networkCaptor.on('error', function(error) {

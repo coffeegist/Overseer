@@ -19,6 +19,10 @@ p{
   margin-bottom: 0px;
 }
 
+.current-interface {
+  display: inline;
+}
+
 #trafficCanvas {
   margin: 0 auto;
   display: block;
@@ -45,7 +49,7 @@ p{
   overflow: inherit;
 }
 
-.toggle-filters {
+.network-controls-row {
   padding-top: 5px;
 }
 

@@ -2,12 +2,13 @@
 var pcap = require('pcap');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
+var spawn = require('child_process').spawn;
 
 function NetworkCaptor(options) {
   var self = this;
   EventEmitter.call(self);
   var opts = options || {};
-  self.device = opts.device || opts.Device || '';
+  self.device = opts.device || opts.Device || self.getFirstDevice();
   self.filter = opts.filter || opts.Filter || '';
   self._pcapSession = undefined;
 }
@@ -51,6 +52,69 @@ NetworkCaptor.prototype.stop = function() {
   } finally {
     return result;
   }
+};
+
+NetworkCaptor.prototype.setDevice = function(name) {
+  var self = this;
+
+  if (self._pcapSession && self._pcapSession.opened) {
+    self.emit('error', {error: "Unable to update device while capturing."});
+  } else {
+    self.device = name;
+  }
+};
+
+NetworkCaptor.prototype.getDeviceSettings = function () {
+  var self = this;
+  var result = {name: self.device, address: []};
+  var devices = pcap.findalldevs();
+
+  for (var i=0; i<devices.length; i++) {
+    if (devices[i].name == self.device) {
+      for (var j=0; j<devices[i].addresses.length; j++) {
+        try {
+          result.address.push([
+            devices[i].addresses[j].addr,
+            devices[i].addresses[j].netmask
+          ]);
+        } catch (e) {
+          // empty address, no worry
+        }
+      }
+    }
+  }
+
+  return result;
+};
+
+NetworkCaptor.prototype.getFirstDevice = function () {
+  return pcap.findalldevs()[0].name;
+};
+
+NetworkCaptor.prototype.getDeviceList = function() {
+  var self = this;
+  devList = pcap.findalldevs();
+  result = [];
+
+  for( var i=0; i < devList.length; i++) {
+    var selected = (devList[i].name == self.device) ? true : false
+    result.push({name: devList[i].name, selected: selected});
+  }
+
+  return result;
+};
+
+NetworkCaptor.prototype.enableMonitorMode = function(start) {
+  var self = this;
+  var cmd = start ? 'start' : 'stop';
+  var airmon_ng_start = spawn('airmon-ng', [cmd, self.device], {silent: true})
+    .on('error', function(err) {
+      return false;
+    })
+    .on('close', function(code, signal) {
+      self.emit('airmon-finished');
+      return true;
+    });
 };
 
 module.exports = NetworkCaptor;
