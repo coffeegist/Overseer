@@ -629,6 +629,7 @@ $(function() {
     currentInterface.clearAddressData();
 
     for (var i=0; i<data.address.length; i++) {
+      // (address, netmask)
       currentInterface.addAddressData(data.address[i][0], data.address[i][1]);
     }
 
@@ -638,6 +639,7 @@ $(function() {
   socket.on('interfaceList', function(data) {
     var element = $('#interface-radio-group');
     var html = '';
+    var currentInterfaceExists = false;
 
     html += '<div class="row">';
     for(var i = 0; i < data.list.length; i++) {
@@ -658,23 +660,55 @@ $(function() {
         html += '</div>';
         html += '<div class="row">';
       }
+
+      if (data.list[i].name === currentInterface.getName()) {
+        console.log(data.list[i].name, " = ", currentInterface.getName());
+        currentInterfaceExists = true;
+      }
     }
 
     html += '</div>';
-
     element.html(html);
+
+    if (!currentInterfaceExists) {
+      currentInterface.setName("None");
+      currentInterface.clearAddressData();
+      updateCurrentInterface(currentInterface.getName());
+    }
   });
 
   function updateCurrentInterface(interfaceName) {
     $('.current-interface').each(function() {
       $(this).html(interfaceName);
     });
+    updateCurrentInterfaceSettings();
   };
 
-  $('#monitor-toggle').change(function(e) {
-      socket.emit("enableMonitorMode", {
-        enable: $('#monitor-toggle').prop('checked')
-      });
+  function updateCurrentInterfaceSettings() {
+    var addressTupleList = currentInterface.getAddressData();
+    var html = '<div class="well">';
+    html += '<div class="row">';
+    html += '<div class="col-xs-6 address-label">IP Address</div>';
+    html += '<div class="col-xs-6 address-label">Netmask</div>';
+    html += '</div>'; // /row
+
+    for(var i = 0; i < addressTupleList.length; i++) {
+      html += '<div class="row">'
+      html += '<div class="col-xs-6">' + addressTupleList[i][0] + '</div>';
+      html += '<div class="col-xs-6">' + addressTupleList[i][1] + '</div>';
+      html += '</div>'; // /row
+    }
+
+    html += '</div>'; // /container
+    $('#current-interface-settings').html(html);
+  };
+
+  $('#enable-monitor').click(function() {
+      socket.emit("enableMonitorMode");
+  });
+
+  $('#disable-monitor').click(function() {
+      socket.emit("disableMonitorMode");
   });
 
   $applyInterfaceSettingsButton.click(function(e) {

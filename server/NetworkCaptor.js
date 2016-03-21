@@ -104,10 +104,19 @@ NetworkCaptor.prototype.getDeviceList = function() {
   return result;
 };
 
-NetworkCaptor.prototype.enableMonitorMode = function(start) {
+NetworkCaptor.prototype.enableMonitorMode = function() {
   var self = this;
-  var cmd = start ? 'start' : 'stop';
-  var airmon_ng_start = spawn('airmon-ng', [cmd, self.device], {silent: true})
+  self._doAirmonCommand('start');
+};
+
+NetworkCaptor.prototype.disableMonitorMode = function() {
+  var self = this;
+  self._doAirmonCommand('stop');
+};
+
+NetworkCaptor.prototype._doAirmonCommand = function(command) {
+  var self = this;
+  var airmon_ng_start = spawn('airmon-ng', [command, self.device], {silent: true})
     .on('error', function(err) {
       return false;
     })

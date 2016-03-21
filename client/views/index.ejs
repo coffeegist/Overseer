@@ -35,7 +35,15 @@
                 <label for="interfaces" class="control-label">Select an interface:</label>
                 <div class="form-group" id="interface-radio-group"></div>
               </form>
-              <input id="monitor-toggle" type="checkbox" data-toggle="toggle" data-on="Mon" data-off="Mon">
+              <hr>
+              <h5 style="font-weight: 600;">
+                <div class="current-interface"></div> Settings
+              </h4>
+              <div id="current-interface-settings"></div>
+              <div style="text-align:center;">
+                <button style="margin: 5px;" class="btn btn-primary btn-sm" id="enable-monitor">Enable Monitor Mode on <div class="current-interface">None</div></button>
+                <button style="margin: 5px;" class="btn btn-primary btn-sm" id="disable-monitor">Disable Monitor Mode on <div class="current-interface">None</div></button>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

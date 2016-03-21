@@ -23,6 +23,11 @@ p{
   display: inline;
 }
 
+.address-label {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 #trafficCanvas {
   margin: 0 auto;
   display: block;

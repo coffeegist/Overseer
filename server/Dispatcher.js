@@ -65,12 +65,12 @@ module.exports = function(app) {
       socket.emit('interfaceList', {list: networkCaptor.getDeviceList()});
     });
 
-    socket.on('enableMonitorMode', function(data) {
-      var result = networkCaptor.enableMonitorMode(data.enable);
+    socket.on('enableMonitorMode', function() {
+      networkCaptor.enableMonitorMode();
+    });
 
-      socket.emit('monitorModeChanged', {
-        enabled: result
-      });
+    socket.on('disableMonitorMode', function() {
+      networkCaptor.disableMonitorMode();
     });
   });
 
