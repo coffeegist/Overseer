@@ -150,6 +150,17 @@ Animator.prototype.addTraffic = function(sourceAddr, destAddr, type) {
     if (cidrRange == -1 || (type != 'ipv4' && type != 'ipv6')) {
       self.displayTraffic(sourceAddr, destAddr, type);
     } else {
+      if (type == 'ipv4') {
+        if (cidrRange == 0) { // default broadcast to "this" network
+          var addressList = currentInterface.getAddressData();
+          for (var i=0; i < addressList.length; i++) {
+            if (ipaddr.IPv4.isIPv4(addressList[i][1])) {
+              destIP = ipaddr.parse(addressList[i][0]);
+              cidrRange = self._subnetMaskToCIDR(addressList[i][1]);
+            }
+          }
+        }
+      }
       for (var ip in self._nodes) {
         var checkedIP = ipaddr.parse(ip);
         if (checkedIP.kind() == destIP.kind()) {
@@ -407,6 +418,146 @@ Animator.prototype._isMulticast = function(address) {
     console.log(e);
   } finally {
     return result;
+  }
+};
+
+Animator.prototype._subnetMaskToCIDR = function(address) {
+  switch (address) {
+    case '255.255.255.255':
+      return 32;
+      break;
+
+    case '255.255.255.254':
+      return 31;
+      break;
+
+    case '255.255.255.252':
+      return 30;
+      break;
+
+    case '255.255.255.248':
+      return 29;
+      break;
+
+    case '255.255.255.240':
+      return 28;
+      break;
+
+    case '255.255.255.224':
+      return 27;
+      break;
+
+    case '255.255.255.192':
+      return 26;
+      break;
+
+    case '255.255.255.128':
+      return 25;
+      break;
+
+    case '255.255.255.0':
+      return 24;
+      break;
+
+    case '255.255.254.0':
+      return 23;
+      break;
+
+    case '255.255.252.0':
+      return 22;
+      break;
+
+    case '255.255.248.0':
+      return 21;
+      break;
+
+    case '255.255.240.0':
+      return 20;
+      break;
+
+    case '255.255.224.0':
+      return 19;
+      break;
+
+    case '255.255.192.0':
+      return 18;
+      break;
+
+    case '255.255.128.0':
+      return 17;
+      break;
+
+    case '255.255.0.0':
+      return 16;
+      break;
+
+    case '255.254.0.0':
+      return 15;
+      break;
+
+    case '255.252.0.0':
+      return 14;
+      break;
+
+    case '255.248.0.0':
+      return 13;
+      break;
+
+    case '255.240.0.0':
+      return 12;
+      break;
+
+    case '255.224.0.0':
+      return 11;
+      break;
+
+    case '255.192.0.0':
+      return 10;
+      break;
+
+    case '255.128.0.0':
+      return 9;
+      break;
+
+    case '255.0.0.0':
+      return 8;
+      break;
+
+    case '254.0.0.0':
+      return 7;
+      break;
+
+    case '252.0.0.0':
+      return 6;
+      break;
+
+    case '248.0.0.0':
+      return 5;
+      break;
+
+    case '240.0.0.0':
+      return 4;
+      break;
+
+    case '224.0.0.0':
+      return 3;
+      break;
+
+    case '192.0.0.0':
+      return 2;
+      break;
+
+    case '128.0.0.0':
+      return 1;
+      break;
+
+    case '0.0.0.0':
+      return 0;
+      break;
+
+    default:
+      return 0;
+      break;
   }
 };
 ;$(function() {
