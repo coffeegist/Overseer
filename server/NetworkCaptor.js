@@ -3,6 +3,7 @@ var pcap = require('pcap');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var spawn = require('child_process').spawn;
+var commandExists = require('command-exists');
 
 function NetworkCaptor(options) {
   var self = this;
@@ -116,14 +117,21 @@ NetworkCaptor.prototype.disableMonitorMode = function() {
 
 NetworkCaptor.prototype._doAirmonCommand = function(command) {
   var self = this;
-  var airmon_ng_start = spawn('airmon-ng', [command, self.device], {silent: true})
-    .on('error', function(err) {
-      return false;
-    })
-    .on('close', function(code, signal) {
-      self.emit('airmon-finished');
-      return true;
-    });
+
+  commandExists('airmon-ng', function(err, airmon) {
+    if (airmon) {
+      var airmon_ng_start = spawn('airmon-ng', [command, self.device], {silent: true})
+      .on('error', function(err) {
+        return false;
+      })
+      .on('close', function(code, signal) {
+        self.emit('airmon-finished');
+        return true;
+      });
+    } else {
+      self.emit('error', {error: "airmon-ng must be installed to change monitor mode."});
+    }
+  });
 };
 
 module.exports = NetworkCaptor;

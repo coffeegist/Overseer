@@ -662,7 +662,6 @@ $(function() {
       }
 
       if (data.list[i].name === currentInterface.getName()) {
-        console.log(data.list[i].name, " = ", currentInterface.getName());
         currentInterfaceExists = true;
       }
     }
