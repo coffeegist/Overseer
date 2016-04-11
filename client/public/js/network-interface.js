@@ -88,8 +88,9 @@ $(function() {
     if (!currentInterfaceExists) {
       currentInterface.setName("None");
       currentInterface.clearAddressData();
-      updateCurrentInterface(currentInterface.getName());
     }
+
+    updateCurrentInterface(currentInterface.getName());
   });
 
   function updateCurrentInterface(interfaceName) {

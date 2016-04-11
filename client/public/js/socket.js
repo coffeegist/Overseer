@@ -1,10 +1,14 @@
 $(function() {
   socket.on("connect", function() {
     socket.emit("nodeListRequest");
+    socket.emit("getInterfaceSettings");
+    socket.emit("interfaceListRequest");
   });
 
   socket.on("reconnect", function() {
     socket.emit("nodeListRequest");
+    socket.emit("getInterfaceSettings");
+    socket.emit("interfaceListRequest");
   });
 
   socket.on("system", function(data) {

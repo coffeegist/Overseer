@@ -563,10 +563,14 @@ Animator.prototype._subnetMaskToCIDR = function(address) {
 ;$(function() {
   socket.on("connect", function() {
     socket.emit("nodeListRequest");
+    socket.emit("getInterfaceSettings");
+    socket.emit("interfaceListRequest");
   });
 
   socket.on("reconnect", function() {
     socket.emit("nodeListRequest");
+    socket.emit("getInterfaceSettings");
+    socket.emit("interfaceListRequest");
   });
 
   socket.on("system", function(data) {
@@ -823,8 +827,9 @@ $(function() {
     if (!currentInterfaceExists) {
       currentInterface.setName("None");
       currentInterface.clearAddressData();
-      updateCurrentInterface(currentInterface.getName());
     }
+
+    updateCurrentInterface(currentInterface.getName());
   });
 
   function updateCurrentInterface(interfaceName) {
