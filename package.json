@@ -14,7 +14,8 @@
     "cap": "^0.1.0",
     "radioparse": "~0.2.0",
     "pcap": "git+https://github.com/audrummer15/node_pcap.git",
-    "ipaddr.js": "git://github.com/audrummer15/ipaddr.js.git"
+    "ipaddr.js": "git://github.com/audrummer15/ipaddr.js.git",
+    "command-exists": "~0.1.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
