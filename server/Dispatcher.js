@@ -93,12 +93,20 @@ module.exports = function(app) {
     io.sockets.emit('interfaceList', {list: networkCaptor.getDeviceList()});
   });
 
+  networkCaptor.on("deviceChanged", function() {
+    nodeManager.clearNodeList();
+  });
+
   networkCaptor.on('error', function(error) {
     io.sockets.emit('error', error);
   });
 
   nodeManager.on('newNode', function(nodeData) {
     io.sockets.emit('newNode', nodeData);
+  });
+
+  nodeManager.on('listCleared', function() {
+    io.sockets.emit('nodeList', {list: networkCaptor.getDeviceList()});
   });
 
   trafficPackager.on('trafficPackageReady', function(traffic) {

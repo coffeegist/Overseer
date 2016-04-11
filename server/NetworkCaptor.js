@@ -61,6 +61,7 @@ NetworkCaptor.prototype.setDevice = function(name) {
     self.emit('error', {error: "Unable to update device while capturing."});
   } else {
     self.device = name;
+    self.emit('deviceChanged');
   }
 };
 

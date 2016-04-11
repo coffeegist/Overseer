@@ -66,6 +66,13 @@ NodeManager.prototype.getNodeList = function() {
   return list;
 };
 
+NodeManager.prototype.clearNodeList = function() {
+  var self = this;
+
+  self._nodeMap = {};
+  self.emit('listCleared');
+};
+
 NodeManager.prototype.checkTrafficForNewNodes = function(addressArray) {
   var self = this;
   var sourceMAC = undefined;
