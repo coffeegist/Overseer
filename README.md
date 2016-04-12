@@ -1,10 +1,6 @@
 # Overseer
 Program to watch over the activities of a CTF game.
 
-TODO
----------
-Fix: Traffic does not animate from 1st element in node list to last element. 
-
 
 To get this project started, you will need libpcap.
 
@@ -46,6 +42,5 @@ sudo grunt serve
 If this doesn't work, ensure that the grunt tool is in your path, and try the following:
 
 ```
-sudo -s
-grunt serve
+sudo node app.js
 ```
